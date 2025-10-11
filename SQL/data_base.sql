@@ -1,0 +1,4 @@
+IF DB_ID('HotelNetworkDB') IS NULL
+BEGIN
+    CREATE DATABASE HotelNetworkDB;
+END;
