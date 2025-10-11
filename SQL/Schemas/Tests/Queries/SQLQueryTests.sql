@@ -4,8 +4,8 @@ INSERT INTO Users (Username, PasswordHash, Salt, Email) VALUES ('deca', '23hfuwf
 INSERT INTO Users (Username, PasswordHash, Salt, Email) VALUES ('joca5', '23hfuwfeqwiu', 'eueqwuiqwrh9842', 'joca5@hotmail.com');
 INSERT INTO Users (Username, PasswordHash, Salt, Email) VALUES ('jussarada', '234452fegwd', 'wedrwd', 'jussarada@gmail.com');
 
-INSERT INTO Hotels (Name, Location) VALUES ('Aurélio Json HH', 'Street Catumbi 1230, Rio De Janeiro');
-INSERT INTO Hotels (Name, Location) VALUES ('White House', 'Street 345, Bogotá');
+INSERT INTO Hotels (Name, Location, Rooms) VALUES ('Aurélio Json HH', 'Street Catumbi 1230, Rio De Janeiro', 100);
+INSERT INTO Hotels (Name, Location, Rooms) VALUES ('White House', 'Street 345, Bogotá', 400);
 
 INSERT INTO Bookings (CheckIn, CheckOut, HotelID, UserID) VALUES ('03-05-2025 10:00:00.000', '08-05-2025 14:30:00.005', 1, 2);
 INSERT INTO Bookings (CheckIn, CheckOut, HotelID, UserID) VALUES ('11-06-2025 10:00:00.000', '12-07-2025 14:30:00.005', 1, 2);
@@ -13,6 +13,12 @@ INSERT INTO Bookings (CheckIn, CheckOut, HotelID, UserID) VALUES ('11-06-2025 10
 INSERT INTO Bookings (CheckIn, CheckOut, HotelID, UserID) VALUES ('11-06-2026 10:00:00.000', '11-07-2026 14:30:00.005', 2, 4);
 INSERT INTO Bookings (CheckIn, CheckOut, HotelID, UserID) VALUES ('11-06-2026 10:00:00.000', '11-07-2026 14:30:00.005', 2, 4);
 INSERT INTO Bookings (CheckIn, CheckOut, HotelID, UserID) VALUES ('09-01-2026 10:00:00.000', '09-03-2026 14:30:00.005', 1, 5);
+
+INSERT INTO Bookings (CheckIn, CheckOut, UserID, HotelID) VALUES ('09-03-2026 10:00:00.000', '09-04-2026 14:30:00.005', 5, 4);
+
+INSERT INTO CalendarBlocks (DateIn, DateOut, HotelID) VALUES ('09-02-2026 10:11:00', '09-02-2026 19:35:00.006', 4);
+
+DELETE FROM Bookings WHERE ID = 8;
 
 
 ALTER TABLE Users
@@ -31,10 +37,13 @@ ALTER TABLE CalendarBlocks
 ALTER TABLE CalendarBlocks
 	ADD ID INT IDENTITY PRIMARY KEY;
 
+UPDATE Hotels SET Rooms = 4 WHERE ID = 3;
+UPDATE Hotels SET Rooms = 4 WHERE ID = 4;
 
 SELECT * FROM Users;
 SELECT * FROM Hotels;
 SELECT * FROM Bookings;
+SELECT * FROM CalendarBlocks;
 
 SET STATISTICS IO ON;
 SET STATISTICS TIME ON;

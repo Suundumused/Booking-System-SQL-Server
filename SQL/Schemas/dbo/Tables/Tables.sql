@@ -17,8 +17,9 @@ BEGIN
 
 	CREATE TABLE Hotels(
 		ID INT IDENTITY PRIMARY KEY,
-		Name VARCHAR(150),
-		Location VARCHAR(255)
+		Name VARCHAR(150) NOT NULL,
+		Location VARCHAR(255) NOT NULL,
+		Rooms INT NOT NULL
 	);
 
 	CREATE TABLE Bookings(
@@ -34,11 +35,6 @@ BEGIN
 		CONSTRAINT FK_Bookings_Users FOREIGN KEY (UserID) REFERENCES Users(ID)
 	);
 
-	CREATE INDEX IX_Bookings ON Bookings (UserID, HotelID) INCLUDE (CheckIn, CheckOut);
-	CREATE INDEX IX_Bookings_UserID ON Bookings (UserID) INCLUDE (CheckIn, CheckOut, HotelID);
-	CREATE INDEX IX_Bookings_HotelID ON Bookings (HotelID) INCLUDE (CheckIn, CheckOut, UserID);
-	CREATE INDEX IX_Bookings_Check_InOut ON Bookings (CheckIn, CheckOut) INCLUDE (UserID, HotelID);
-
 	CREATE TABLE CalendarBlocks(
 		ID INT IDENTITY PRIMARY KEY,
 
@@ -49,9 +45,6 @@ BEGIN
 
 		CONSTRAINT FK_CalendarBlocks_Hotels FOREIGN KEY (HotelID) REFERENCES Hotels(ID)
 	);
-
-	CREATE INDEX IX_CalendarBlocks_HotelID ON CalendarBlocks(HotelID) INCLUDE (DateIn, DateOut);
-	CREATE INDEX IX_CalendarBlocks_DateInOut ON CalendarBlocks(DateIn, DateOut) INCLUDE (HotelID);
 
 	CREATE TABLE SupportMessages(
 		ID INT IDENTITY PRIMARY KEY,
@@ -66,9 +59,5 @@ BEGIN
 		CONSTRAINT FK_SupportMessages_Users FOREIGN KEY (UserID) REFERENCES Users(ID),
 		CONSTRAINT FK_SupportMessages_Hotels FOREIGN KEY (HotelID) REFERENCES Hotels(ID)
 	);
-
-	CREATE INDEX IX_SupportMessages ON SupportMessages(UserID, HotelID) INCLUDE (Message, CreatedDate);
-	CREATE INDEX IX_SupportMessages_UserID ON SupportMessages(UserID) INCLUDE (HotelID, Message, CreatedDate);
-	CREATE INDEX IX_SupportMessages_HotelID ON SupportMessages(HotelID) INCLUDE (UserID, Message, CreatedDate);
 END;
 GO
