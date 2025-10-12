@@ -7,7 +7,7 @@ BEGIN
 		PasswordHash VARCHAR(256) NOT NULL,
 		Salt VARCHAR(256) NOT NULL,
 
-		Name VARCHAR(100),
+		Name VARCHAR(100) CHECK (LEN(Name) > 2) NOT NULL,
 		Phone1 VARCHAR(19),
 		Phone2 VARCHAR(19),
 

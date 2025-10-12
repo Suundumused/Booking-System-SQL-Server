@@ -1,25 +1,26 @@
-CREATE TRIGGER TRG_Check_Booking_Overllaps
+CREATE TRIGGER TRG_Check_Booking_Overlaps
 ON Bookings
 INSTEAD OF INSERT
 AS
 BEGIN
+	SET NOCOUNT ON;
+
 	DECLARE @ErrorMessage VARCHAR(150);
 
-	DECLARE @HotelID DATETIME;
 	DECLARE @CheckIn DATETIME;
 	DECLARE @CheckOut DATETIME;
 	DECLARE @BlockedDateIn DATETIME;
 	DECLARE @BlockedDateOut DATETIME;
 
-	DECLARE @OverllapingCount INT;
+	DECLARE @HotelID INT;
+	DECLARE @OverlapingCount INT;
 	DECLARE @MaxRooms INT;
 
-	SELECT @HotelID = HotelID FROM inserted;
+	SELECT @HotelID = HotelID, @CheckIn = CheckIn, @CheckOut = CheckOut FROM inserted;
 	SELECT @MaxRooms = Rooms FROM Hotels WHERE ID = @HotelID;
-	
-	SELECT @CheckIn = CheckIn, @CheckOut = CheckOut FROM inserted;
 
-	SELECT @OverllapingCount = COUNT(*) FROM Bookings 
+	SELECT @OverlapingCount = COUNT(*) 
+	FROM Bookings 
 	WHERE
 		HotelID = @HotelID
 	AND
@@ -31,16 +32,20 @@ BEGIN
 		(CheckIn BETWEEN @CheckIn AND @CheckOut)
 	);
 			 
-	IF @OverllapingCount >= @MaxRooms
-		BEGIN 
-			SET @ErrorMessage = CONCAT(
-				'Max rooms exhausted for the selected hotel. Overllaps: ', 
-				@MaxRooms
-			);
-			THROW 51000, @ErrorMessage, 1;
-		END;
-	ELSE
-		SELECT @BlockedDateIn = DateIn, @BlockedDateOut = DateOut
+	IF @OverlapingCount >= @MaxRooms
+	BEGIN 
+		SET @ErrorMessage = CONCAT(
+			'Max rooms exhausted for the selected hotel. Overlaps: ', 
+			@OverlapingCount
+		);
+		THROW 51000, @ErrorMessage, 1;
+		RETURN;
+	END;
+		ELSE
+	BEGIN
+		SELECT TOP 1
+			@BlockedDateIn = DateIn, 
+			@BlockedDateOut = DateOut
 		FROM CalendarBlocks 
 		WHERE
 			HotelID = @HotelID
@@ -62,7 +67,9 @@ BEGIN
 				@BlockedDateOut
 			);
 			THROW 51000, @ErrorMessage, 1;
+			RETURN;
 		END;
+	END;
 
 	INSERT INTO Bookings (CheckIn, CheckOut, UserID, HotelID) 
 	SELECT CheckIn, CheckOut, UserID, HotelID 

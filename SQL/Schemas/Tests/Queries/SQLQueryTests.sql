@@ -17,12 +17,22 @@ INSERT INTO Bookings (CheckIn, CheckOut, HotelID, UserID) VALUES ('09-01-2026 10
 INSERT INTO Bookings (CheckIn, CheckOut, UserID, HotelID) VALUES ('09-03-2026 10:00:00.000', '09-04-2026 14:30:00.005', 5, 4);
 
 INSERT INTO CalendarBlocks (DateIn, DateOut, HotelID) VALUES ('09-02-2026 10:11:00', '09-02-2026 19:35:00.006', 4);
+INSERT INTO CalendarBlocks (DateIn, DateOut, HotelID) VALUES ('10-02-2026 10:11:00', '10-03-2026 19:35:00.006', 4);
 
 DELETE FROM Bookings WHERE ID = 8;
+DELETE FROM CalendarBlocks WHERE ID = 1;
 
 
 ALTER TABLE Users
 	ADD CONSTRAINT UQ_Users_Email UNIQUE (Email);
+
+ALTER TABLE Users
+    ADD CONSTRAINT CK_Users_Name CHECK (LEN(Name) > 2)
+
+UPDATE Users SET Name = '"NOT SET"' WHERE Name IS NULL;
+
+ALTER TABLE Users
+    ALTER COLUMN Name VARCHAR(100) NOT NULL;
 
 ALTER TABLE Bookings
 	DROP CONSTRAINT PK__Bookings__01461D2D5D7394D1;
@@ -91,3 +101,37 @@ ORDER BY
 SELECT DateIn, DateOut
 FROM CalendarBlocks
 WHERE HotelID = 1;
+
+
+
+SELECT * FROM VW_Bookings_Users_Hotel_CalendarBlocks;
+
+SELECT * FROM UDF_User_Hotel_Bookings('jussarada@gmail.com', 3);
+
+
+WITH OrderedBookings AS
+(
+	SELECT
+		u.Name AS 'User Real Name',
+		u.Phone1 as 'Mobile Number',
+		u.Phone2 as 'Phone Number',
+		h.Name as 'Hotel Name',
+		b.CheckIn as 'Booking CheckIn',
+		b.CheckOut as 'Booking CheckOut',
+		ROW_NUMBER() OVER (ORDER BY b.CheckIn) AS RowNum
+	FROM Bookings b
+		INNER JOIN Hotels h ON h.ID = b.HotelID 
+		INNER JOIN Users u ON u.ID = b.UserID
+	WHERE 
+		u.Email = 'jussarada@gmail.com'
+		AND
+		h.ID = 3
+)
+SELECT
+	CASE WHEN RowNum = 1 THEN u.Name ELSE '' END AS [User Real Name],
+		'Mobile Number' AS [Mobile Number],
+		'Phone Number' AS [Phone Number],
+    CASE WHEN RowNum = 1 THEN 'Hotel Name' ELSE NULL END AS [Hotel Name],
+		'Booking CheckIn' AS [Booking CheckIn],
+		'Booking CheckOut' AS [Booking CheckOut]
+FROM OrderedBookings
