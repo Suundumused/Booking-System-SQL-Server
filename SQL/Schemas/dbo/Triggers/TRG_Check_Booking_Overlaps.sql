@@ -1,22 +1,29 @@
-CREATE TRIGGER TRG_Check_Booking_Overlaps
+CREATE OR ALTER TRIGGER TRG_Check_Booking_Overlaps
 ON Bookings
 INSTEAD OF INSERT
 AS
 BEGIN
 	SET NOCOUNT ON;
 
-	DECLARE @ErrorMessage VARCHAR(150);
+	DECLARE @ErrorMessage NVARCHAR(150);
 
 	DECLARE @CheckIn DATETIME;
 	DECLARE @CheckOut DATETIME;
-	DECLARE @BlockedDateIn DATETIME;
-	DECLARE @BlockedDateOut DATETIME;
 
 	DECLARE @HotelID INT;
+
+	SELECT @HotelID = HotelID, @CheckIn = CheckIn, @CheckOut = CheckOut FROM inserted;
+
+	IF CAST(@CheckIn AS DATE) >= CAST(@CheckOut AS DATE)
+	BEGIN
+		SET @ErrorMessage = 'The exit date must be later than the entry date.';
+		THROW 51000, @ErrorMessage, 1;
+		RETURN;
+	END;
+
 	DECLARE @OverlapingCount INT;
 	DECLARE @MaxRooms INT;
 
-	SELECT @HotelID = HotelID, @CheckIn = CheckIn, @CheckOut = CheckOut FROM inserted;
 	SELECT @MaxRooms = Rooms FROM Hotels WHERE ID = @HotelID;
 
 	SELECT @OverlapingCount = COUNT(*) 
@@ -40,39 +47,81 @@ BEGIN
 		);
 		THROW 51000, @ErrorMessage, 1;
 		RETURN;
-	END;
+	END
 		ELSE
 	BEGIN
-		SELECT TOP 1
-			@BlockedDateIn = DateIn, 
-			@BlockedDateOut = DateOut
-		FROM CalendarBlocks 
-		WHERE
-			HotelID = @HotelID
-		AND
+		IF EXISTS
 		(
-			(@CheckIn BETWEEN DateIn AND DateOut) 
-			OR 
-			(@CheckOut BETWEEN DateIn AND DateOut)
-			OR
-			(DateIn BETWEEN @CheckIn AND @CheckOut)
-		);
-
-		IF @BlockedDateIn IS NOT NULL
+			SELECT 1
+			FROM CalendarBlocks 
+			WHERE
+				HotelID = @HotelID
+			AND
+			(
+				(@CheckIn BETWEEN DateIn AND DateOut) 
+				OR 
+				(@CheckOut BETWEEN DateIn AND DateOut)
+				OR
+				(DateIn BETWEEN @CheckIn AND @CheckOut)
+			)
+		)
 		BEGIN
-			SET @ErrorMessage = CONCAT(
-				'The dates are blocked at the hotel during this period. From ', 
-				@BlockedDateIn, 
-				' to ', 
-				@BlockedDateOut
-			);
+			SET @ErrorMessage = 'The reservation dates overlap with blocking dates.';
 			THROW 51000, @ErrorMessage, 1;
 			RETURN;
 		END;
 	END;
 
-	INSERT INTO Bookings (CheckIn, CheckOut, UserID, HotelID) 
-	SELECT CheckIn, CheckOut, UserID, HotelID 
+	DECLARE @OverlapingCustomPrices TABLE 
+	(
+		Price DECIMAL(10, 2) NOT NULL,
+		OverlapingCount INT NOT NULL
+	);
+
+	INSERT INTO @OverlapingCustomPrices
+	SELECT
+		Price,
+		DATEDIFF(
+			DAY,
+			CASE WHEN DateIn < @CheckIn THEN @CheckIn ELSE DateIn END,
+			CASE WHEN DateOut > @CheckOut THEN @CheckOut ELSE DateOut END
+		) + 1
+	FROM CustomPrices
+	WHERE
+		HotelID = @HotelID
+	AND
+	(
+		(@CheckIn BETWEEN DateIn AND DateOut)
+		OR 
+		(@CheckOut BETWEEN DateIn AND DateOut)
+		OR 
+		(DateIn BETWEEN @CheckIn AND @CheckOut)
+	);
+
+	DECLARE @TotalBookingDays INT = DATEDIFF(DAY, @CheckIn, @CheckOut) + 1;
+	DECLARE @TotalOverlapingDays INT = (SELECT SUM(OverlapingCount) FROM @OverlapingCustomPrices);
+
+	DECLARE @FinalPrice DECIMAL(10, 2) = (SELECT Price FROM inserted);
+
+	IF @FinalPrice IS NULL
+	BEGIN
+		IF @TotalBookingDays = @TotalOverlapingDays
+		BEGIN
+			SET @FinalPrice = (SELECT SUM(Price) FROM @OverlapingCustomPrices);
+		END
+			ELSE
+		BEGIN
+			SET @FinalPrice = 
+			(SELECT SUM(Price * OverlapingCount) FROM @OverlapingCustomPrices)
+			+ 
+			(@TotalBookingDays - @TotalOverlapingDays)
+			* 
+			(SELECT Price FROM Hotels WHERE ID = @HotelID);
+		END;
+	END;
+
+	INSERT INTO Bookings (CheckIn, CheckOut, UserID, HotelID, Price)
+		SELECT CheckIn, CheckOut, UserID, HotelID, @FinalPrice
 	FROM inserted;
 END;
 GO

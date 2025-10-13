@@ -1,11 +1,19 @@
-INSERT INTO Users (Username, PasswordHash, Salt, Email) VALUES ('jao123', '23hfuwfeqwiu', 'eueqwuiqwrh9842', 'joao123@gmail.com');
-INSERT INTO Users (Username, PasswordHash, Salt, Email) VALUES ('carrada', '23hfuwfeqwiu', 'eueqwuiqwrh9842', 'carrada@gmail.com');
-INSERT INTO Users (Username, PasswordHash, Salt, Email) VALUES ('deca', '23hfuwfeqwiu', 'eueqwuiqwrh9842', 'deca@gmail.com');
-INSERT INTO Users (Username, PasswordHash, Salt, Email) VALUES ('joca5', '23hfuwfeqwiu', 'eueqwuiqwrh9842', 'joca5@hotmail.com');
-INSERT INTO Users (Username, PasswordHash, Salt, Email) VALUES ('jussarada', '234452fegwd', 'wedrwd', 'jussarada@gmail.com');
+INSERT INTO Users (Username, Email, PasswordHash, Salt, Name, Phone1) VALUES ('Joaopipa123', 'jambofruta@gmail.com', 'fno3n9p8fhj', 'efwh982f92', 'Joao', '22659261');
+INSERT INTO Users (Username, Email, PasswordHash, Salt, Name, Phone1) VALUES ('Mariatalba', 'tabata@wmail.com', 'n4453n9p8fhj', 'ef234g982f92', 'Maria', '23245679');
+INSERT INTO Users (Username, Email, PasswordHash, Salt, Name, Phone1) VALUES ('Ratao', 'ratata@wmail.com', 'g4344yt32', '2f42f3w43', 'Ratinho', '12345678');
 
-INSERT INTO Hotels (Name, Location, Rooms) VALUES ('Aurélio Json HH', 'Street Catumbi 1230, Rio De Janeiro', 100);
-INSERT INTO Hotels (Name, Location, Rooms) VALUES ('White House', 'Street 345, Bogotá', 400);
+INSERT INTO Hotels (Name, Location, Rooms, Price) VALUES ('Aurélio Json HH', 'Street Catumbi 1230, Rio De Janeiro', 3, 360.00);
+INSERT INTO Hotels (Name, Location, Rooms, Price) VALUES ('White House', 'Street 345, Bogotá', 4, 420.00);
+
+INSERT INTO CalendarBlocks (HotelID, DateIn, DateOut) VALUES (1, '03-05-2025 00:00:00.001', '03-15-2025 23:59:00.001');
+INSERT INTO CalendarBlocks (HotelID, DateIn, DateOut) VALUES (1, '09-06-2025 00:00:00.001', '09-29-2025 23:59:00.001');
+INSERT INTO CalendarBlocks (HotelID, DateIn, DateOut) VALUES (2, '01-03-2026 00:00:00.001', '01-07-2025 23:59:00.001');
+
+INSERT INTO CustomPrices (HotelID, DateIn, DateOut, Price) VALUES (1, '11-06-2025 07:00:00.000', '11-18-2025 10:00:00.000', 520.65);
+INSERT INTO CustomPrices (HotelID, DateIn, DateOut, Price) VALUES (1, '11-06-2025 07:00:00.000', '11-18-2025 10:00:00.000', 750.30);
+
+INSERT INTO CustomPrices (HotelID, DateIn, DateOut, Price) VALUES (2, '11-06-2025 07:00:00.000', '11-18-2025 10:00:00.000', 600.65);
+INSERT INTO CustomPrices (HotelID, DateIn, DateOut, Price) VALUES (2, '12-25-2025 07:00:00.000', '01-01-2026 10:00:00.000', 950.30);
 
 INSERT INTO Bookings (CheckIn, CheckOut, HotelID, UserID) VALUES ('03-05-2025 10:00:00.000', '08-05-2025 14:30:00.005', 1, 2);
 INSERT INTO Bookings (CheckIn, CheckOut, HotelID, UserID) VALUES ('11-06-2025 10:00:00.000', '12-07-2025 14:30:00.005', 1, 2);
@@ -40,12 +48,25 @@ ALTER TABLE Bookings
 ALTER TABLE Bookings
 	ADD ID INT IDENTITY PRIMARY KEY;
 
+ALTER TABLE Bookings
+	ALTER COLUMN Price DECIMAL(10, 2);
+
+ALTER TABLE Hotels
+	ADD Price DECIMAL(10, 2);
+
+ALTER TABLE CustomPrices
+    ALTER COLUMN Price DECIMAL(10, 2) NOT NULL;
+
+UPDATE Hotels SET Price = 420.00 WHERE ID = 4;
 
 ALTER TABLE CalendarBlocks
 	DROP CONSTRAINT PK__Calendar__A0608191E40C26C6;
 
 ALTER TABLE CalendarBlocks
 	ADD ID INT IDENTITY PRIMARY KEY;
+
+ALTER TABLE Bookings
+    ADD Price DECIMAL(10, 2) NOT NULL;
 
 UPDATE Hotels SET Rooms = 4 WHERE ID = 3;
 UPDATE Hotels SET Rooms = 4 WHERE ID = 4;
@@ -54,6 +75,8 @@ SELECT * FROM Users;
 SELECT * FROM Hotels;
 SELECT * FROM Bookings;
 SELECT * FROM CalendarBlocks;
+SELECT * FROM CustomPrices;
+SELECT * FROM SupportMessages;
 
 SET STATISTICS IO ON;
 SET STATISTICS TIME ON;
@@ -108,30 +131,9 @@ SELECT * FROM VW_Bookings_Users_Hotel_CalendarBlocks;
 
 SELECT * FROM UDF_User_Hotel_Bookings('jussarada@gmail.com', 3);
 
-
-WITH OrderedBookings AS
-(
-	SELECT
-		u.Name AS 'User Real Name',
-		u.Phone1 as 'Mobile Number',
-		u.Phone2 as 'Phone Number',
-		h.Name as 'Hotel Name',
-		b.CheckIn as 'Booking CheckIn',
-		b.CheckOut as 'Booking CheckOut',
-		ROW_NUMBER() OVER (ORDER BY b.CheckIn) AS RowNum
-	FROM Bookings b
-		INNER JOIN Hotels h ON h.ID = b.HotelID 
-		INNER JOIN Users u ON u.ID = b.UserID
-	WHERE 
-		u.Email = 'jussarada@gmail.com'
-		AND
-		h.ID = 3
-)
-SELECT
-	CASE WHEN RowNum = 1 THEN u.Name ELSE '' END AS [User Real Name],
-		'Mobile Number' AS [Mobile Number],
-		'Phone Number' AS [Phone Number],
-    CASE WHEN RowNum = 1 THEN 'Hotel Name' ELSE NULL END AS [Hotel Name],
-		'Booking CheckIn' AS [Booking CheckIn],
-		'Booking CheckOut' AS [Booking CheckOut]
-FROM OrderedBookings
+DELETE FROM Users;
+DELETE FROM Bookings;
+DELETE FROM Hotels;
+DELETE FROM CalendarBlocks;
+DELETE FROM CustomPrices;
+DELETE FROM SupportMessages;

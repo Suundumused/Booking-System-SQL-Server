@@ -1,4 +1,4 @@
-CREATE FUNCTION UDF_User_Hotel_Bookings 
+CREATE OR ALTER FUNCTION UDF_User_Hotel_Bookings 
 (
 	@UserEmail VARCHAR(100), 
 	@HotelID INT

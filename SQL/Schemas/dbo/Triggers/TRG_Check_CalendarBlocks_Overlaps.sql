@@ -1,11 +1,11 @@
-CREATE TRIGGER TRG_Check_CalendarBlocks_Overlaps
+CREATE OR ALTER TRIGGER TRG_Check_CalendarBlocks_Overlaps
 ON CalendarBlocks
 INSTEAD OF INSERT
 AS
 BEGIN
 	SET NOCOUNT ON;
 
-	DECLARE @ErrorMessage VARCHAR(150);
+	DECLARE @ErrorMessage NVARCHAR(150);
 
 	DECLARE @HotelID INT;
 

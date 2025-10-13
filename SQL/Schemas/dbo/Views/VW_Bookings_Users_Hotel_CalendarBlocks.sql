@@ -1,4 +1,4 @@
-CREATE VIEW VW_Bookings_Users_Hotel_CalendarBlocks
+CREATE OR ALTER VIEW VW_Bookings_Users_Hotel_CalendarBlocks
 AS
 SELECT
 	h.Name AS 'Hotel Name',
