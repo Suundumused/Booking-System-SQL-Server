@@ -70,7 +70,7 @@ BEGIN
 		UserID INT NOT NULL,
 		HotelID INT NOT NULL,
 
-		Message VARCHAR(500),
+		Message NVARCHAR(500) CHECK (LEN(Message) > 0) NOT NULL,
 
 		CreatedDate DATETIME DEFAULT GETDATE(),
 

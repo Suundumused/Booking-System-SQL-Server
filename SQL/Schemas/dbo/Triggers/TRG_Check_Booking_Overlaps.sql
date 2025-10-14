@@ -1,4 +1,4 @@
-CREATE OR ALTER TRIGGER TRG_Check_Booking_Overlaps
+CREATE OR ALTER TRIGGER trg_Check_Booking_Overlaps
 ON Bookings
 INSTEAD OF INSERT
 AS
@@ -26,18 +26,14 @@ BEGIN
 
 	SELECT @MaxRooms = Rooms FROM Hotels WHERE ID = @HotelID;
 
-	SELECT @OverlapingCount = COUNT(*) 
-	FROM Bookings 
+	SELECT @OverlapingCount = COUNT(ID) 
+		FROM Bookings 
 	WHERE
 		HotelID = @HotelID
 	AND
-	(
-		(@CheckIn BETWEEN CheckIn AND CheckOut) 
-		OR 
-		(@CheckOut BETWEEN CheckIn AND CheckOut)
-		OR
-		(CheckIn BETWEEN @CheckIn AND @CheckOut)
-	);
+		CheckIn < @CheckOut
+	AND
+		CheckOut > @CheckIn;
 			 
 	IF @OverlapingCount >= @MaxRooms
 	BEGIN 
@@ -53,17 +49,13 @@ BEGIN
 		IF EXISTS
 		(
 			SELECT 1
-			FROM CalendarBlocks 
+				FROM CalendarBlocks 
 			WHERE
 				HotelID = @HotelID
 			AND
-			(
-				(@CheckIn BETWEEN DateIn AND DateOut) 
-				OR 
-				(@CheckOut BETWEEN DateIn AND DateOut)
-				OR
-				(DateIn BETWEEN @CheckIn AND @CheckOut)
-			)
+				DateIn < @CheckOut
+			AND
+				DateOut > @CheckIn
 		)
 		BEGIN
 			SET @ErrorMessage = 'The reservation dates overlap with blocking dates.';
@@ -85,36 +77,53 @@ BEGIN
 			DAY,
 			CASE WHEN DateIn < @CheckIn THEN @CheckIn ELSE DateIn END,
 			CASE WHEN DateOut > @CheckOut THEN @CheckOut ELSE DateOut END
-		) + 1
+		)
 	FROM CustomPrices
 	WHERE
 		HotelID = @HotelID
 	AND
-	(
-		(@CheckIn BETWEEN DateIn AND DateOut)
-		OR 
-		(@CheckOut BETWEEN DateIn AND DateOut)
-		OR 
-		(DateIn BETWEEN @CheckIn AND @CheckOut)
-	);
+		DateIn < @CheckOut
+	AND
+		DateOut > @CheckIn;
 
-	DECLARE @TotalBookingDays INT = DATEDIFF(DAY, @CheckIn, @CheckOut) + 1;
-	DECLARE @TotalOverlapingDays INT = (SELECT SUM(OverlapingCount) FROM @OverlapingCustomPrices);
+	DECLARE @TotalBookingDays INT = DATEDIFF(DAY, @CheckIn, @CheckOut);
+	DECLARE @TotalOverlapingDays INT = (SELECT SUM(OverlapingCount) 
+		FROM @OverlapingCustomPrices);
 
-	DECLARE @FinalPrice DECIMAL(10, 2) = (SELECT Price FROM inserted);
+	DECLARE @CustomPrice DECIMAL(10, 2) = (SELECT Price FROM inserted);
+	DECLARE @FinalPrice DECIMAL(10, 2);
 
-	IF @FinalPrice IS NULL
+	IF @CustomPrice IS NOT NULL
 	BEGIN
-		IF @TotalBookingDays = @TotalOverlapingDays
+		SET @FinalPrice = @CustomPrice * @TotalBookingDays;
+	END
+		ELSE
+	BEGIN
+		IF EXISTS 
+		(
+			SELECT 1 FROM @OverlapingCustomPrices
+		)
 		BEGIN
-			SET @FinalPrice = (SELECT SUM(Price) FROM @OverlapingCustomPrices);
+			IF @TotalBookingDays = @TotalOverlapingDays
+			BEGIN
+				SET @FinalPrice = (SELECT SUM(Price * OverlapingCount) 
+					FROM @OverlapingCustomPrices);
+			END
+				ELSE
+			BEGIN
+				SET @FinalPrice = 
+				(SELECT SUM(Price * OverlapingCount) 
+					FROM @OverlapingCustomPrices)
+				+ 
+				(@TotalBookingDays - @TotalOverlapingDays)
+				* 
+				(SELECT Price FROM Hotels WHERE ID = @HotelID);
+			END;
 		END
 			ELSE
 		BEGIN
 			SET @FinalPrice = 
-			(SELECT SUM(Price * OverlapingCount) FROM @OverlapingCustomPrices)
-			+ 
-			(@TotalBookingDays - @TotalOverlapingDays)
+			@TotalBookingDays 
 			* 
 			(SELECT Price FROM Hotels WHERE ID = @HotelID);
 		END;

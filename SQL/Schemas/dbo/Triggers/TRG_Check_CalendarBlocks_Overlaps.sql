@@ -1,4 +1,4 @@
-CREATE OR ALTER TRIGGER TRG_Check_CalendarBlocks_Overlaps
+CREATE OR ALTER TRIGGER trg_Check_CalendarBlocks_Overlaps
 ON CalendarBlocks
 INSTEAD OF INSERT
 AS
@@ -7,71 +7,52 @@ BEGIN
 
 	DECLARE @ErrorMessage NVARCHAR(150);
 
-	DECLARE @HotelID INT;
-
 	DECLARE @DateIn DATETIME;
 	DECLARE @DateOut DATETIME;
-	DECLARE @OverlappedDateIn DATETIME;
-	DECLARE @OverlappedDateOut DATETIME;
 
-	SELECT @HotelID = HotelID, @DateIn = DateIn, @DateOut = DateOut FROM inserted;
+	SELECT @DateIn = DateIn, @DateOut = DateOut FROM inserted;
 
-	SELECT TOP 1
-		@OverlappedDateIn = DateIn,
-		@OverlappedDateOut = DateOut
-	FROM CalendarBlocks
-	WHERE
-		HotelID = @HotelID
-	AND
+	EXEC usp_DateTimeRangeChecker @DateIn, @DateOut;
+
+	DECLARE @HotelID INT = (SELECT HotelID FROM inserted);
+
+	IF EXISTS
 	(
-		(@DateIn BETWEEN DateIn AND DateOut)
-		OR
-		(@DateOut BETWEEN DateIn AND DateOut)
-		OR
-		(DateIn BETWEEN @DateIn AND @DateOut)
-	);
-
-	IF @OverlappedDateIn IS NOT NULL
-	BEGIN
-		SET @ErrorMessage = CONCAT(
-			'The date block overlaps an existing one. From ', 
-			@OverlappedDateIn, 
-			' to ', 
-			@OverlappedDateOut
-		);
-		THROW 51000, @ErrorMessage, 1;
-		RETURN;
-	END;
-		ELSE
-	BEGIN
-		SELECT TOP 1
-			@OverlappedDateIn = COALESCE(CheckIn, NULL),
-			@OverlappedDateOut = CheckOut
-		FROM Bookings 
+		SELECT 1
+			FROM CalendarBlocks
 		WHERE
 			HotelID = @HotelID
 		AND
+			DateIn < @DateOut
+		AND
+			DateOut > @DateIn
+	)
+	BEGIN
+		SET @ErrorMessage = 'The date block overlaps an existing one.';
+		THROW 51000, @ErrorMessage, 1;
+		RETURN;
+	END
+		ELSE
+	BEGIN
+		IF EXISTS
 		(
-			(@DateIn BETWEEN CheckIn AND CheckOut) 
-			OR 
-			(@DateOut BETWEEN CheckIn AND CheckOut)
-			OR
-			(CheckIn BETWEEN @DateIn AND @DateOut)
-		);
-
-		IF @OverlappedDateIn IS NOT NULL
+			SELECT 1
+				FROM Bookings 
+			WHERE
+				HotelID = @HotelID
+			AND
+				CheckIn < @DateOut
+			AND
+				CheckOut > @DateIn
+		)
 		BEGIN
-			SET @ErrorMessage = CONCAT(
-				'The date block overlaps an existing booking. From ', 
-				@OverlappedDateIn, 
-				' to ', 
-				@OverlappedDateOut
-			);
+			SET @ErrorMessage = 'The date block overlaps an existing booking. From ';
 			THROW 51000, @ErrorMessage, 1;
 			RETURN;
 		END;
 	END;
 
-	INSERT INTO CalendarBlocks (DateIn, DateOut, HotelID) VALUES (@DateIn, @DateOut, @HotelID);
+	INSERT INTO CalendarBlocks (HotelID, DateIn, DateOut) 
+	VALUES (@HotelID, @DateIn, @DateOut);
 END;
 GO
