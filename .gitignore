@@ -1,0 +1,8 @@
+# Temporary or log files
+*.log
+*.tmp
+temp/
+logs/
+
+# Editor-specific files (e.g., Visual Studio)
+.vs/

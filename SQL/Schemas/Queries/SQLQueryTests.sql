@@ -26,6 +26,9 @@ INSERT INTO CustomPrices (HotelID, DateIn, DateOut, Price) VALUES (1, '2025-03-0
 
 INSERT INTO Bookings (CheckIn, CheckOut, UserID, HotelID) VALUES ('2025-03-01 00:00:00.001', '2025-03-09 23:59:59.000', 2, 1);
 
+INSERT INTO SupportMessages (UserID, HotelID, Message) VALUES (3, 2, 'Não consigo fazer a reserva');
+INSERT INTO SupportMessages (UserID, HotelID, Message) VALUES (1, 2, 'Não consigo ddddddddddddd a reserva');
+
 
 DELETE FROM Bookings WHERE ID > 1;
 DELETE FROM CustomPrices;
@@ -35,33 +38,6 @@ ALTER TABLE SupportMessages
 
 ALTER TABLE SupportMessages
 	ADD CONSTRAINT CK_Len_Message CHECK (LEN(Message) > 0);
-
-SELECT COUNT(ID)
-	FROM Bookings 
-WHERE
-	HotelID = 1
-AND
-	CheckIn < '2025-03-09 23:59:59.000'
-AND
-	CheckOut > '2025-03-01 00:00:00.001';
-
-SELECT 1
-	FROM Bookings 
-WHERE
-	HotelID = 2
-AND
-	CheckIn < 'DASDSASADASD'
-AND
-	CheckOut > 'SDASDSASD';
-
-SELECT 1
-	FROM CalendarBlocks 
-WHERE
-	HotelID = 2
-AND
-	DateIn < 'DASDSASADASD'
-AND
-	DateOut > 'SDASDSASD';
 
 
 SELECT
@@ -89,3 +65,5 @@ AND
 	DateOut > '12312f'
 
 SELECT * FROM fn_ListBookingsByUser(DEFAULT, 'Mariatalba');
+SELECT * FROM fn_ListBookingsByHotel(1);
+SELECT * FROM fn_ListRequestedSupportByHotel(2);

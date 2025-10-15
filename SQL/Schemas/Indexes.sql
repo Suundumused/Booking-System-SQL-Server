@@ -16,5 +16,10 @@ BEGIN
 	CREATE INDEX IX_CustomPrices_HotelID_DateInOut
 		ON CustomPrices (HotelID, DateIn, DateOut)
 	INCLUDE (ID, Price);
+
+	-- Support Messages
+	CREATE INDEX IX_SupportMessages_UserID
+		ON SupportMessages (UserID)
+	INCLUDE (ID, HotelID, CreatedDate);
 END
 GO;

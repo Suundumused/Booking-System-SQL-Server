@@ -8,11 +8,11 @@ AS
 RETURN
 (	
 	SELECT
-		b.ID as 'Booking ID',
-		h.Name as 'Hotel Name',
-		b.CheckIn as 'Check-In',
-		b.CheckOut as 'Check-Out',
-		b.Price as 'Total Price'
+		b.ID AS 'Booking ID',
+		h.Name AS 'Hotel Name',
+		b.CheckIn AS 'Check-In',
+		b.CheckOut AS 'Check-Out',
+		b.Price AS 'Total Price'
 	FROM Bookings b 
 		INNER JOIN Hotels h 
 	ON h.ID = b.HotelID
