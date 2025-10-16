@@ -1,4 +1,10 @@
 BEGIN
+	-- Users
+
+	CREATE INDEX IX_Users_Login
+		ON Users (PasswordHash, Salt)
+	INCLUDE (ID, Username, Email, Name, Phone1, Phone2, CreationDate, LastLoginDate);
+	
 	-- Bookings
 	
 	CREATE INDEX IX_Bookings_UserID

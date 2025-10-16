@@ -6,3 +6,6 @@ logs/
 
 # Editor-specific files (e.g., Visual Studio)
 .vs/
+
+#Python Scripts
+env/

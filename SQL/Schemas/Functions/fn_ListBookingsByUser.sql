@@ -1,7 +1,7 @@
 CREATE OR ALTER FUNCTION fn_ListBookingsByUser
 (
-	@Email VARCHAR(100) = NULL,
-	@Username VARCHAR(100) = NULL
+	@Email NVARCHAR(100) = NULL,
+	@Username NVARCHAR(100) = NULL
 )
 RETURNS TABLE
 AS

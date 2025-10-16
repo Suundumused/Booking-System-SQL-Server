@@ -25,10 +25,10 @@ This project implements a hotel booking system in T-SQL with the following featu
 - Independent reservations, prices, support messages, and calendar for each hotel.
 - User Registration and Login "Password / Salt"
 - Creation of reservations by managing the number of rooms available in relation to reservation overlapping dates and/or blocked dates.
-- The same applies to blackout dates on the calendar and customized daily prices.
-- Blocking date ranges via `CalendarBlocks`
-- Custom daily prices via `CustomPrices`
-- Automatic final price calculation (combining hotel base price and custom daily prices)
+- The same applies to customized daily prices.
+- Blocking date ranges via `CalendarBlocks` per Hotel
+- Custom daily prices via `CustomPrices` per Hotel
+- Automatic final price calculation (combining hotel base price and custom daily prices) based on their respective intercessions and unions.
 - Reusable functions for overlap checks, user and hotel reports
 - Validation of incorrect entry and exit dates.
 
@@ -38,20 +38,48 @@ The goal is to enforce business integrity at the database level and provide reus
 
 Files included in the repository (original names):
 
-- `DataBase.sql` - Initial configuration (schemas, server settings)
-- `Tables.sql` - Table creation scripts (Bookings, Hotels, Users, CustomPrices, CalendarBlocks and SupportMessages)
-- `Indexes.sql` - Index creation scripts
-- `fn_ListBookingsByHotel.sql` - Function to list bookings by hotel
-- `fn_ListBookingsByUser.sql` - Function to list bookings by user
-- `fn_ListRequestedSupportByHotel.sql` - Function that aggregates support requests by hotel
-- `usp_DateTimeRangeChecker.sql` - Utility stored procedure for date range checks
-- `trg_Check_Booking_Overlaps.sql` - `INSTEAD OF INSERT` trigger to validate Bookings
-- `trg_Check_CalendarBlocks_Overlaps.sql` - Trigger for CalendarBlocks validation
-- `trg_Check_CustomPrices_Overlaps.sql` - Trigger for CustomPrices validation
+      Project Folder/
+      └── SQL/
+          ├── Hotel Network Project.sln
+          ├── SQL_DOC.md
+          └── Schemas/
+              ├── DataBase.sql
+              ├── Indexes.sql
+              ├── Tables.sql
+              ├── Functions/
+              │   ├── fn_ListBookingsByHotel.sql
+              │   ├── fn_ListBookingsByUser.sql
+              │   ├── fn_ListRequestedSupportByHotel.sql
+              │   └── fn_Login.sql
+              ├── Procedures/
+              │   └── usp_DateTimeRangeChecker.sql
+              ├── Queries/
+              │   └── SQLQueryTests.sql
+              └── Triggers/
+                  ├── trg_Check_Booking_Overlaps.sql
+                  ├── trg_Check_CalendarBlocks_Overlaps.sql
+                  └── trg_Check_CustomPrices_Overlaps.sql
+
+### SQL Project Structure Overview
+
+| File | Description |
+|------|--------------|
+| **DataBase.sql** | Initial configuration (schemas, server settings). |
+| **Tables.sql** | Table creation scripts (`Bookings`, `Hotels`, `Users`, `CustomPrices`, `CalendarBlocks`, and `SupportMessages`). |
+| **Indexes.sql** | Index creation scripts for the required triggers, functions, and procedures. |
+| **fn_ListBookingsByHotel.sql** | Function to list bookings by hotel. |
+| **fn_ListBookingsByUser.sql** | Function to list bookings by user. |
+| **fn_ListRequestedSupportByHotel.sql** | Function that aggregates support counts by hotel. |
+| **fn_Login.sql** | Tests login with the `PasswordHash` and `Salt` columns using indexes. |
+| **usp_DateTimeRangeChecker.sql** | Utility stored procedure for date range checks on triggers. |
+| **trg_Check_Booking_Overlaps.sql** | `INSTEAD OF INSERT` trigger to check for overlapping reservation dates, available rooms, blocked dates, and custom daily rate overlaps/unions. |
+| **trg_Check_CalendarBlocks_Overlaps.sql** | `INSTEAD OF INSERT` trigger for `CalendarBlocks` overlap validation per hotel. |
+| **trg_Check_CustomPrices_Overlaps.sql** | `INSTEAD OF INSERT` trigger for `CustomPrices` overlap validation per hotel. |
+
 
 ## Prerequisites
 
-- Microsoft SQL Server 2016+ (SQL Server 2017/2019/2022 recommended). `CREATE OR ALTER` requires a compatible version.
+- Microsoft SQL Server 2018+ (SQL Server 2019/2022 recommended). `CREATE OR ALTER` requires a compatible version.
 - DDL/DML permissions to create objects in the target schema (typically `dbo`).
 - Optional: `tSQLt` for unit testing if you want automated tests.
 
@@ -73,21 +101,20 @@ This section describes the primary tables used by the project. Refer to `Tables.
 - `CheckIn DATETIME2`
 - `CheckOut DATETIME2`
 - `Price DECIMAL(18,2)` - Final booking price.
-- `CreatedAt DATETIME2` (default `SYSUTCDATETIME()`)
+- `CreatedAt DATETIME2` (DEFAULT `SYSUTCDATETIME()`)
 
 ### `CustomPrices`
 - `ID INT PK`
-- `HotelID INT` (FK)
+- `HotelID INT` (FK → Hotels.ID)
 - `DateIn DATETIME2`
 - `DateOut DATETIME2`
 - `Price DECIMAL(10,2)` - Daily price.
 
 ### `CalendarBlocks`
 - `ID INT PK`
-- `HotelID INT` (FK)
+- `HotelID INT` (FK → Hotels.ID)
 - `DateIn DATETIME2`
 - `DateOut DATETIME2`
-- `Reason NVARCHAR(255)`
 
 ### `Users`, `SupportMessages`
 - `Users(ID, Username, Email, Name, ...)`
@@ -95,8 +122,9 @@ This section describes the primary tables used by the project. Refer to `Tables.
 
 ## Recommended Indexes
 
-Booking overlap queries are performance-sensitive. Recommended index:
+All indexes for triggers, functions, and procedures are in `Indexes.sql`
 
+Eg:.
 ```sql
 CREATE INDEX IX_Bookings_Hotel_DateRange
   ON Bookings (HotelID, CheckIn, CheckOut)
@@ -120,17 +148,17 @@ Always keep statistics up-to-date (`UPDATE STATISTICS`) after bulk loads.
 
 Files provided and their purpose:
 
-- `fn_ListBookingsByHotel.sql` - Returns bookings for a given hotel (optional date filters).
-- `fn_ListBookingsByUser.sql` - Returns bookings for a specific user.
-- `fn_ListRequestedSupportByHotel.sql` - Aggregates support requests per user with last message.
+| File | Description  |
+|------|--------------|
+| **fn_ListBookingsByHotel.sql** | Returns bookings for a given hotel. |
+| **fn_ListBookingsByUser.sql** | Returns bookings for a specific user. |
+| **fn_ListRequestedSupportByHotel.sql** | Aggregates support requests per user with last message. |
+| **fn_Login** | Tests the login by combining PasswordHash and Salt to return user ID. If it does not exist, it returns -1. |
 
-Notes:
-- Use `DATETIME2` for better precision.
-- Keep column names explicit in `RETURNS TABLE` block.
-
-## Stored Procedures & Utilities
-
-- `usp_DateTimeRangeChecker.sql` - Utility procedure for checking date-time intersections (useful for tests and callers outside triggers).
+### Stored Procedures & Utilities
+|     |   |
+| ------ | ----------- |
+| `usp_DateTimeRangeChecker.sql` | Utility procedure for checking date-time intersections (useful for tests and callers outside triggers). |
 
 ## Triggers
 
@@ -145,38 +173,34 @@ Final price calculation (per row):
 - If booking has an explicit `Price` provided on insert, use it.
 - Otherwise: `final = sumCustomPrice + (bookingDays - overlapDays) * hotelBasePrice`.
 
----
-
 ## Usage Examples (queries)
 
 **Count overlaps for hotel in date range:**
 ```sql
 DECLARE @Start DATETIME2 = '2025-03-01 00:00:00', @End DATETIME2 = '2025-03-09 23:59:59';
+
 SELECT COUNT(ID) AS OverlapCount
-FROM Bookings
-WHERE HotelID = 1
-  AND CheckIn < @End
-  AND CheckOut > @Start;
+    FROM Bookings
+WHERE 
+    HotelID = 1
+AND CheckIn < @End
+AND CheckOut > @Start;
 ```
 
 **Insert booking example (trigger performs validation & price):**
 ```sql
 INSERT INTO Bookings (CheckIn, CheckOut, UserID, HotelID)
-VALUES ('2025-07-01', '2025-07-05', 10, 1);
+    VALUES ('2025-07-01', '2025-07-05', 10, 1);
 ```
-
----
 
 ## Validation & Recommended Tests
 
-Test list:
 1. Single-row insert: valid booking inserts successfully.
-2. Multi-row batch insert: valid bookings all insert successfully.
-3. Batch insert exceeding `Rooms` capacity: whole batch is rejected.
-4. Insert where `CheckIn >= CheckOut`: rejected.
-5. Insert intersecting `CalendarBlocks`: rejected.
-6. Booking crossing `CustomPrices` periods: price is calculated correctly per day.
-7. Concurrency test: two concurrent sessions inserting for the same hotel - verify no race conditions.
+2. Batch insert exceeding `Rooms` capacity: whole batch is rejected.
+3. Insert where `CheckIn >= CheckOut`: rejected.
+4. Insert intersecting `CalendarBlocks`: rejected.
+5. Booking crossing `CustomPrices` periods: price is calculated correctly per day.
+6. Concurrency test: two concurrent sessions inserting for the same hotel - verify no race conditions.
 
 Test tools and hints:
 - Use `BEGIN TRAN / ROLLBACK` to run non-destructive tests.
@@ -207,10 +231,8 @@ THROW 51000, 'Friendly error message here', 1;
 ```
 Common messages:
 - `The entry date must be earlier than the exit date.`
-- `Max rooms exhausted for the selected hotel.`
+- `Maximum number of rooms sold out for this hotel on the specified dates.`
 - `The reservation dates overlap with blocking dates.`
-
-Document error messages and codes so the application layer can present meaningful information to users.
 
 ## Performance & Concurrency Checklist
 

@@ -6,20 +6,15 @@ CREATE OR ALTER FUNCTION fn_Login
 RETURNS INT
 AS
 BEGIN
-	DECLARE @ID INT = 
-	(
-		SELECT 
-			ID
-		FROM 
-			Users
-		WHERE PasswordHash = @PasswordHash AND Salt = @Salt
+	RETURN COALESCE (
+		(
+			SELECT 
+				ID
+			FROM 
+				Users
+			WHERE PasswordHash = @PasswordHash AND Salt = @Salt
+		), 
+		-1
 	);
-
-	IF @ID IS NOT NULL
-	BEGIN
-		RETURN @ID;
-	END;
-
-	RETURN -1;
 END;
 GO
