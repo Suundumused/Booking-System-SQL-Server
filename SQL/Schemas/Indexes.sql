@@ -4,7 +4,15 @@ BEGIN
 	CREATE INDEX IX_Users_Login
 		ON Users (PasswordHash, Salt)
 	INCLUDE (ID, Username, Email, Name, Phone1, Phone2, CreationDate, LastLoginDate);
-	
+
+	CREATE INDEX IX_Users_Username
+		ON Users (Username)
+	INCLUDE (ID, Email, Name, Phone1, Phone2, CreationDate, LastLoginDate);
+
+	CREATE INDEX IX_Users_Email
+		ON Users (Email)
+	INCLUDE (ID, Username, Name, Phone1, Phone2, CreationDate, LastLoginDate);
+
 	-- Bookings
 	
 	CREATE INDEX IX_Bookings_UserID
@@ -48,5 +56,5 @@ BEGIN
 	CREATE INDEX IX_SupportMessages_UserID
 		ON SupportMessages (UserID)
 	INCLUDE (ID, HotelID, CreatedDate);
-END
-GO;
+END;
+GO

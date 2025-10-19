@@ -1,6 +1,6 @@
 # SQL Project - Hotel Network
 
-> **Summary:** Complete documentation for the SQL database project (schema, objects, triggers, functions, procedures, indexes, naming conventions, deployment and tests).
+> **Summary:** SQL Server project for a multi-hotel reservation system, login users, price calendars, available rooms, calendar blocks, and support messages.
 
 ## Table of Contents
 

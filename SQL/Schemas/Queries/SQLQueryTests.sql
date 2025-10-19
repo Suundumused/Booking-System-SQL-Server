@@ -57,3 +57,5 @@ AND
 	CheckIn > 'xxx' 
 AND 
 	CheckOut < 'xxx';
+
+SELECT * From Users WHERE Username = 'Jibaia';
