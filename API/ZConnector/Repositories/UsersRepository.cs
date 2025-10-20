@@ -64,7 +64,7 @@ namespace ZConnector.Repositories
 
             if (user is null) 
             {
-                throw new NullReferenceException();
+                throw new FileNotFoundException();
             }
 
             if (VerifyPassword(credentials.Password, user.PasswordHash, user.Salt))

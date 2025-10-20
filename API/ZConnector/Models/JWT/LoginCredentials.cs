@@ -6,6 +6,6 @@
         public string? Email { get; set; }
         public required string Password { get; set; }
 
-        public DateTime LastLoginDate { get; } = DateTime.UtcNow;
+        public DateTime LastLoginDate { get; } = DateTime.Now;
     }
 }

@@ -31,7 +31,7 @@ namespace ZConnector.Controllers.JWT
             {
                 return BadRequest("Missing Credentials.");
             }
-            catch (NullReferenceException) 
+            catch (FileNotFoundException) 
             {
                 return NotFound("User not found");
             }
@@ -41,7 +41,7 @@ namespace ZConnector.Controllers.JWT
             }
             catch (Exception)
             {
-                return BadRequest("Login is currently unavailable.");
+                return BadRequest("An error occurred while logging in the user.");
             }
         }
 
@@ -55,7 +55,7 @@ namespace ZConnector.Controllers.JWT
             }
             catch 
             {
-                return BadRequest("Register is currently unavailable.");
+                return BadRequest("An error occurred while registering the user.");
             }
         }
     }

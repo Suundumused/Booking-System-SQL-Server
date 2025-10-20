@@ -13,10 +13,6 @@ BEGIN
 		ON Users (Email)
 	INCLUDE (ID, Username, Name, Phone1, Phone2, CreationDate, LastLoginDate, IsAdmin);
 
-	CREATE INDEX IX_Users_Token
-		ON Users (AuthToken)
-	INCLUDE (ID, Username, Email, Name, Phone1, Phone2, CreationDate, LastLoginDate, IsAdmin);
-
 	-- Bookings
 	
 	CREATE INDEX IX_Bookings_UserID
