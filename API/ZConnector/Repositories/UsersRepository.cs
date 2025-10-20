@@ -1,8 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
+
+using Microsoft.EntityFrameworkCore;
 
 using System.Security.Cryptography;
 
 using ZConnector.Data;
+using ZConnector.Models.Client;
 using ZConnector.Models.Entities;
 using ZConnector.Models.JWT;
 using ZConnector.Repositories.Interfaces;
@@ -12,64 +15,77 @@ namespace ZConnector.Repositories
 {
     public class UsersRepository : BaseRepository<User>, IUsersRepository
     {
-        private readonly CommonJwtSettings _jwtSettings;
+        private readonly IMapper _mapper;
 
 
-        public UsersRepository(AppDbContext context, CommonJwtSettings jwtSettings) : base(context) 
+        public UsersRepository(AppDbContext context, CommonJwtSettings jwtSettings, IMapper mapper) : base(context) 
         {
-            _jwtSettings = jwtSettings;
+            _mapper = mapper;
         }
 
-        public async Task<User?> GetByUsernameAsync(string userName) 
+        public async Task<UserModel?> GetUserById(int id) 
+        {
+            return _mapper.Map<UserModel?>(await GetByIdAsync(id));
+        }
+
+        public async Task<User?> GetByUserNameAsync(string userName) 
         {
             return await _context.Users
                 .Where(u => u.Username == userName)
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<User> LoginAndGetUser(LoginCredentials credentials) 
+        public async Task<User?> GetByUserEmailAsync(string email) 
+        {
+            return await _context.Users
+                .Where(e => e.Email == email)
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task<UserModel> LoginAndGetUser(LoginCredentials credentials) 
         {
             string? userName = credentials.UserName;
+            string? email = credentials.Email;
+
+            User? user;
 
             if (userName is not null)
             {
-                User? user = await GetByUsernameAsync(userName);
-
-                if (user is not null) 
-                {
-                    if (VerifyPassword(credentials.Password, user.PasswordHash, user.Salt)) 
-                    {
-                        user.LastLoginDate = credentials.LastLoginDate;
-
-                        Update(user);
-                        await SaveChangesAsync();
-
-                        return user;
-                    }
-                }
-
+                user = await GetByUserNameAsync(userName);
+            }
+            else if (email is not null)
+            {
+                user = await GetByUserEmailAsync(email);
+            }
+            else 
+            {
                 throw new KeyNotFoundException();
             }
 
-            throw new NullReferenceException();
+            if (user is null) 
+            {
+                throw new NullReferenceException();
+            }
+
+            if (VerifyPassword(credentials.Password, user.PasswordHash, user.Salt))
+            {
+                user.LastLoginDate = credentials.LastLoginDate;
+
+                Update(_mapper.Map<User>(user));
+                await SaveChangesAsync();
+
+                return _mapper.Map<UserModel>(user);
+            }
+
+            throw new UnauthorizedAccessException();
         }
 
         public async Task Register(RegisterCredentials user) 
         {
-            var (passwordHash, salt) = HashPassword(user.Password);
+            var asUser = _mapper.Map<User>(user);
+            (asUser.PasswordHash, asUser.Salt) = HashPassword(user.Password);
 
-            await AddAsync(new User
-            {
-                Username = user.UserName,
-                Email = user.Email,
-                PasswordHash = passwordHash,
-                Salt = salt,
-
-                Name = user.Name,
-                Phone1 = user.Phone1,
-                Phone2 = user.Phone2
-            });
-
+            await AddAsync(asUser);
             await SaveChangesAsync();
         }
 
@@ -81,25 +97,16 @@ namespace ZConnector.Repositories
                 rng.GetBytes(saltBytes);
             
             using (var pbkdf2 = new Rfc2898DeriveBytes(password, saltBytes, 100000, HashAlgorithmName.SHA256)) // 2. Generate hash using PBKDF2 (100,000 iterations)
-            {
-                byte[] hashBytes = pbkdf2.GetBytes(32); // 256-bit hash
-
-                // 3. Return Base64 for easy DB storage
-                return (Convert.ToBase64String(hashBytes), Convert.ToBase64String(saltBytes));
+            {   
+                return (Convert.ToBase64String(pbkdf2.GetBytes(32)), Convert.ToBase64String(saltBytes)); // 256-bit hash // 3. Return Base64 for easy DB storage
             }
         }
 
         private static bool VerifyPassword(string password, string storedHash, string storedSalt)
         {
-            byte[] saltBytes = Convert.FromBase64String(storedSalt);
-
-            using (var pbkdf2 = new Rfc2898DeriveBytes(password, saltBytes, 100000, HashAlgorithmName.SHA256))
+            using (var pbkdf2 = new Rfc2898DeriveBytes(password, Convert.FromBase64String(storedSalt), 100000, HashAlgorithmName.SHA256))
             {
-                byte[] computedHash = pbkdf2.GetBytes(32);
-                string computedHashBase64 = Convert.ToBase64String(computedHash);
-
-                // Compare stored hash with computed hash
-                return computedHashBase64 == storedHash;
+                return Convert.ToBase64String(pbkdf2.GetBytes(32)) == storedHash; // Compare stored hash with computed hash
             }
         }
     }

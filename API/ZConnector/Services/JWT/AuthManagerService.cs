@@ -3,7 +3,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
-using ZConnector.Models.Entities;
 using ZConnector.Models.JWT;
 using ZConnector.Repositories.Interfaces;
 
@@ -22,18 +21,33 @@ namespace ZConnector.Services.JWT
             _usersRepository = usersRepository;
         }
 
-        private string GenerateJwtToken(string username)
+        private string GenerateJwtToken(LoginCredentials credentials)
         {
+            Claim[] claims;
+
+            if (credentials.UserName is not null)
+            {
+                claims = new[]
+                {
+                    new Claim(JwtRegisteredClaimNames.Sub, credentials.UserName),
+                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+                };
+            }
+            else 
+            {
+                claims = new[]
+                {
+                    new Claim(JwtRegisteredClaimNames.Email, credentials.Email!),
+                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+                };
+            }
+
             return new JwtSecurityTokenHandler().WriteToken(
                 new JwtSecurityToken(
                     issuer: _settings.Issuer,
                     audience: _settings.Audience,
 
-                    claims: new[]
-                    {
-                        new Claim(JwtRegisteredClaimNames.Sub, username),
-                        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-                    },
+                    claims: claims,
 
                     expires: DateTime.Now.AddMinutes(Convert.ToDouble(_settings.ExpirationDate)),
 
@@ -47,24 +61,9 @@ namespace ZConnector.Services.JWT
             );
         }
 
-        public async Task<(string, User)> TestCredentialsAndGetUser(LoginCredentials credentials)
+        public async Task<LoggedInUserData> TestCredentialsAndGetUser(LoginCredentials credentials)
         {
-            try 
-            {
-                return (GenerateJwtToken(credentials.UserName), await _usersRepository.LoginAndGetUser(credentials));
-            }
-            catch (KeyNotFoundException) 
-            {
-                return ("Wrong credentials.", default!);
-            }
-            catch (NullReferenceException)
-            {
-                return ("No Username provided.", default!);
-            }
-            catch (Exception ex) 
-            {
-                return (ex.Message, default!);
-            }
+            return new LoggedInUserData { Token = GenerateJwtToken(credentials), UserData = await _usersRepository.LoginAndGetUser(credentials) };
         }
 
         public async Task Register(RegisterCredentials user) 

@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="15.0.1" />
     <PackageReference Include="EntityFramework" Version="6.5.1" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.21" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.10" />
@@ -22,7 +23,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Controllers\Admin\" />
+    <Folder Include="Data\Transaction\" />
     <Folder Include="InverseMigrations\" />
+    <Folder Include="Services\Admin\Interfaces\" />
   </ItemGroup>
 
 </Project>

@@ -5,7 +5,7 @@ namespace ZConnector.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class WeatherForecastController : ControllerBase
+    public class WeatherForecastController : ParentController
     {
         private static readonly string[] Summaries = new[]
         {

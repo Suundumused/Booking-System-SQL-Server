@@ -1,4 +1,6 @@
-﻿namespace ZConnector.Models.Entities;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace ZConnector.Models.Entities;
 
 public partial class User
 {
@@ -15,4 +17,7 @@ public partial class User
     public int? Phone2 { get; set; }
 
     public DateTime? LastLoginDate { get; set; }
+
+    [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+    public bool IsAdmin { get; set; }
 }

@@ -3,15 +3,19 @@ BEGIN
 
 	CREATE INDEX IX_Users_Login
 		ON Users (PasswordHash, Salt)
-	INCLUDE (ID, Username, Email, Name, Phone1, Phone2, CreationDate, LastLoginDate);
+	INCLUDE (ID, Username, Email, Name, Phone1, Phone2, CreationDate, LastLoginDate, IsAdmin);
 
 	CREATE INDEX IX_Users_Username
 		ON Users (Username)
-	INCLUDE (ID, Email, Name, Phone1, Phone2, CreationDate, LastLoginDate);
+	INCLUDE (ID, Email, Name, Phone1, Phone2, CreationDate, LastLoginDate, IsAdmin);
 
 	CREATE INDEX IX_Users_Email
 		ON Users (Email)
-	INCLUDE (ID, Username, Name, Phone1, Phone2, CreationDate, LastLoginDate);
+	INCLUDE (ID, Username, Name, Phone1, Phone2, CreationDate, LastLoginDate, IsAdmin);
+
+	CREATE INDEX IX_Users_Token
+		ON Users (AuthToken)
+	INCLUDE (ID, Username, Email, Name, Phone1, Phone2, CreationDate, LastLoginDate, IsAdmin);
 
 	-- Bookings
 	

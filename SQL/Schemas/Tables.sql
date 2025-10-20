@@ -12,7 +12,9 @@ BEGIN
 		Phone2 INT,
 
 		CreationDate DATETIME DEFAULT GETDATE(),
-		LastLoginDate DATETIME
+		LastLoginDate DATETIME,
+
+		IsAdmin BIT DEFAULT 0 NOT NULL
 	);
 
 	CREATE TABLE Hotels(

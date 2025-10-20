@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
-using ZConnector.Models.Entities;
 using ZConnector.Models.JWT;
 using ZConnector.Services.JWT;
 
@@ -12,7 +10,7 @@ namespace ZConnector.Controllers.JWT
     [Route("api/[controller]")]
     [ApiController]
     [AllowAnonymous]
-    public class AuthController : ControllerBase
+    public class AuthController : ParentController
     {
         private readonly IAuthManagerService _authManagerService;
 
@@ -25,27 +23,40 @@ namespace ZConnector.Controllers.JWT
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginCredentials user)
         {
-            (string, User) result = await _authManagerService.TestCredentialsAndGetUser(user);
-
-            User? userData = result.Item2;
-
-            if (userData is not null) 
+            try 
             {
-                userData.PasswordHash = string.Empty;
-                userData.Salt = string.Empty;
-
-                return Ok(new LoggedInUserData { Token = result.Item1, UserData = userData });
+                return Ok(await _authManagerService.TestCredentialsAndGetUser(user));
             }
-
-            return Unauthorized(result.Item1);
+            catch (KeyNotFoundException) 
+            {
+                return BadRequest("Missing Credentials.");
+            }
+            catch (NullReferenceException) 
+            {
+                return NotFound("User not found");
+            }
+            catch (UnauthorizedAccessException) 
+            {
+                return Unauthorized("Wrong Credentials.");
+            }
+            catch (Exception)
+            {
+                return BadRequest("Login is currently unavailable.");
+            }
         }
 
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterCredentials user) 
         {
-            await _authManagerService.Register(user);
-
-            return Ok();
+            try 
+            {
+                await _authManagerService.Register(user);
+                return Ok();
+            }
+            catch 
+            {
+                return BadRequest("Register is currently unavailable.");
+            }
         }
     }
 }
