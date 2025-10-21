@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-
 using System.Security.Claims;
 
 using ZConnector.Models.Client;
@@ -23,41 +22,50 @@ namespace ZConnector.Controllers.Client
         [HttpGet("data")]
         public async Task<IActionResult> GetUserData()
         {
-            string? userName = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            string? Email;
-
-            UserModel? userDataStatus;
-
             try 
             {
-                if (userName is not null)
+                UserModel? userDataStatus;
+                
+                string? id = User.FindFirstValue("id");
+                if (id is not null)
                 {
-                    userDataStatus = await _userService.GetByUserNameAsync(userName);
+                    userDataStatus = await _userService.GetUserById(Convert.ToInt32(id));
                 }
                 else
                 {
-                    Email = User.FindFirstValue(ClaimTypes.Email);
-
-                    if (Email is not null)
-                    {
-                        userDataStatus = await _userService.GetByUserEmailAsync(Email);
-                    }
-                    else
-                    {
-                        return Unauthorized("Username and Email are missing. Try Login again.");
-                    }
+                    return Unauthorized("User Id not found. Try Login again.");
                 }
 
                 if (userDataStatus is null)
                 {
                     return NotFound("User data not found. Try Login again.");
                 }
-
                 return Ok(userDataStatus);
             }
             catch 
             {
                 return BadRequest("An internal error occurred while retrieving user data.");
+            }
+        }
+
+        [HttpPatch("update")]
+        public async Task<IActionResult> UpdateUserData([FromBody] UserModel userModel) 
+        {
+            try 
+            {
+                string? id = User.FindFirstValue("id");
+                if (id is not null)
+                {
+                    userModel.ID = Convert.ToInt32(id);
+
+                    await _userService.UpdateUserInfo(userModel);
+                    return Ok();
+                }
+                return Unauthorized("Session expired. Try Login again.");
+            }
+            catch 
+            {
+                return BadRequest("An internal error occurred while updating user data.");
             }
         }
     }

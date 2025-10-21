@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 
 using ZConnector.Models.Client;
+using ZConnector.Models.Entities;
 using ZConnector.Repositories.Interfaces;
 using ZConnector.Services.Client.Interfaces;
 
@@ -29,9 +30,24 @@ namespace ZConnector.Services.Client
             return _mapper.Map<UserModel?>(await _usersRepository.GetByUserNameAsync(userName));
         }
 
+        public async Task<User?> GetRawByUserNameAsync(string userName)
+        {
+            return await _usersRepository.GetByUserNameAsync(userName);
+        }
+
         public async Task<UserModel?> GetByUserEmailAsync(string email) 
         {
             return _mapper.Map<UserModel?>(await _usersRepository.GetByUserEmailAsync(email));
+        }
+
+        public async Task<int?> GetIdFromUserName(string userName)
+        {
+            return await _usersRepository.GetIdFromUserName(userName);
+        }
+
+        public async Task UpdateUserInfo(UserModel user) 
+        {
+            await _usersRepository.UpdateUserInfo(user);
         }
     }
 }

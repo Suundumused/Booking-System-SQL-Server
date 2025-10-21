@@ -10,6 +10,7 @@ using System.Text;
 
 using ZConnector.Data;
 using ZConnector.Data.Transaction;
+using ZConnector.GlobalHanlders;
 using ZConnector.Models.JWT;
 using ZConnector.Repositories;
 using ZConnector.Repositories.Interfaces;
@@ -30,12 +31,18 @@ var commonSettings = new CommonJwtSettings
     ExpirationDate = Convert.ToDouble(builder.Configuration["Jwt:TimeOut"])
 };
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+.ConfigureApiBehaviorOptions(options =>
+    {
+        options.SuppressModelStateInvalidFilter = true;
+    }
+);
 builder.Services.Configure<RouteOptions>(options => options.LowercaseUrls = true);
 
 builder.Services.AddControllersWithViews(options =>
     {
         options.Filters.Add(new AuthorizeFilter());
+        options.Filters.Add(typeof(GlobalModelStateValidatorAttribute));
     }
 );
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

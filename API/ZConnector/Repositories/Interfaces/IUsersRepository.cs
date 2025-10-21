@@ -11,7 +11,11 @@ namespace ZConnector.Repositories.Interfaces
         Task<User?> GetByUserNameAsync(string userName);
         Task<User?> GetByUserEmailAsync(string email);
 
+        Task<int?> GetIdFromUserName(string userName);
+        Task<int?> GetIdFromEmail(string email);
+
         Task Register(RegisterCredentials user);
         Task<UserModel> LoginAndGetUser(LoginCredentials credentials);
+        Task UpdateUserInfo(UserModel userModel);
     }
 }

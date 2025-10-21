@@ -42,6 +42,22 @@ namespace ZConnector.Repositories
                 .FirstOrDefaultAsync();
         }
 
+        public async Task<int?> GetIdFromUserName(string userName)
+        {
+            return await _context.Users
+                .Where(u => u.Username == userName)
+                .Select(u => u.ID)
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task<int?> GetIdFromEmail(string email) 
+        {
+            return await _context.Users
+                .Where(u => u.Email == email)
+                .Select(u => u.ID)
+                .FirstOrDefaultAsync();
+        }
+
         public async Task<UserModel> LoginAndGetUser(LoginCredentials credentials) 
         {
             string? userName = credentials.UserName;
@@ -86,6 +102,45 @@ namespace ZConnector.Repositories
             (asUser.PasswordHash, asUser.Salt) = HashPassword(user.Password);
 
             await AddAsync(asUser);
+            await SaveChangesAsync();
+        }
+
+        public async Task UpdateUserInfo(UserModel userModel) 
+        {
+            var user = new User { ID = userModel.ID };
+
+            _context.Users.Attach(user);
+
+            if (userModel.Username != null)
+            {  
+                user.Username = userModel.Username;
+                _context.Entry(user).Property(u => u.Username).IsModified = true;
+            }
+
+            if (userModel.Email != null)
+            {
+                user.Email = userModel.Email;
+                _context.Entry(user).Property(u => u.Email).IsModified = true;
+            }
+
+            if (userModel.Name != null)
+            {
+                user.Name = userModel.Name;
+                _context.Entry(user).Property(u => u.Name).IsModified = true;
+            }
+
+            if (userModel.Phone1 != null) 
+            {
+                user.Phone1 = userModel.Phone1;
+                _context.Entry(user).Property(u => u.Phone1).IsModified = true;
+            }
+
+            if (userModel.Phone2 != null)
+            {
+                user.Phone2 = userModel.Phone2;
+                _context.Entry(user).Property(u => u.Phone2).IsModified = true;
+            }
+
             await SaveChangesAsync();
         }
 

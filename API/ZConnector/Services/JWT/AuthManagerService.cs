@@ -2,7 +2,7 @@
 
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-
+using ZConnector.Models.Client;
 using ZConnector.Models.JWT;
 using ZConnector.Repositories.Interfaces;
 
@@ -21,15 +21,17 @@ namespace ZConnector.Services.JWT
             _usersRepository = usersRepository;
         }
 
-        private string GenerateJwtToken(LoginCredentials credentials)
+        private string GenerateJwtToken(UserModel credentials)
         {
             Claim[] claims;
+            string id = credentials.ID.ToString();
 
-            if (credentials.UserName is not null)
+            if (credentials.Username is not null)
             {
                 claims = new[]
                 {
-                    new Claim(JwtRegisteredClaimNames.Sub, credentials.UserName),
+                    new Claim(JwtRegisteredClaimNames.Sub, credentials.Username),
+                    new Claim("id", id),
                     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
                 };
             }
@@ -38,6 +40,7 @@ namespace ZConnector.Services.JWT
                 claims = new[]
                 {
                     new Claim(JwtRegisteredClaimNames.Email, credentials.Email!),
+                    new Claim("id", id),
                     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
                 };
             }
@@ -63,7 +66,8 @@ namespace ZConnector.Services.JWT
 
         public async Task<LoggedInUserData> TestCredentialsAndGetUser(LoginCredentials credentials)
         {
-            return new LoggedInUserData { Token = GenerateJwtToken(credentials), UserData = await _usersRepository.LoginAndGetUser(credentials) };
+            UserModel? userData = await _usersRepository.LoginAndGetUser(credentials);
+            return new LoggedInUserData { Token = GenerateJwtToken(userData), UserData = userData };
         }
 
         public async Task Register(RegisterCredentials user) 
