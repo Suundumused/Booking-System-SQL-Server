@@ -36,8 +36,6 @@ The goal is to enforce business integrity at the database level and provide reus
 
 ## Project Files
 
-Files included in the repository (original names):
-
       Project Folder/
       └── SQL/
           ├── Hotel Network Project.sln
@@ -50,13 +48,17 @@ Files included in the repository (original names):
               │   ├── fn_ListBookingsByHotel.sql
               │   ├── fn_ListBookingsByUser.sql
               │   ├── fn_ListRequestedSupportByHotel.sql
-              │   └── fn_Login.sql
+              │   ├── fn_Login.sql
+              │   └── fn_PriceSetter.sql
               ├── Procedures/
-              │   └── usp_DateTimeRangeChecker.sql
+              │   ├── usp_DateTimeRangeChecker.sql
+              │   ├── usp_DateRangeChecker.sql
+              │   └── usp_CheckBookingsBlocksOverlaps.sql
               ├── Queries/
               │   └── SQLQueryTests.sql
               └── Triggers/
                   ├── trg_Check_Booking_Overlaps.sql
+                  ├── trg_Check_Booking_Overlaps_On_Update.sql
                   ├── trg_Check_CalendarBlocks_Overlaps.sql
                   └── trg_Check_CustomPrices_Overlaps.sql
 

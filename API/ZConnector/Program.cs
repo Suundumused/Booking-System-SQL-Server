@@ -42,7 +42,7 @@ builder.Services.Configure<RouteOptions>(options => options.LowercaseUrls = true
 builder.Services.AddControllersWithViews(options =>
     {
         options.Filters.Add(new AuthorizeFilter());
-        options.Filters.Add(typeof(GlobalModelStateValidatorAttribute));
+        options.Filters.Add(typeof(GlobalEndPointHandler));
     }
 );
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -65,6 +65,17 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
             NameClaimType = JwtRegisteredClaimNames.Sub,
             RoleClaimType = ClaimTypes.Role
+        };
+
+        options.Events = new JwtBearerEvents
+        {
+            OnAuthenticationFailed = context =>
+            {
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                context.Response.ContentType = "text/plain";
+
+                return context.Response.WriteAsync("Authentication failed. Please log in again.");
+            }
         };
 
         options.RequireHttpsMetadata = true;

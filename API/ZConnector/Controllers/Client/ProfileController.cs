@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+
 using System.Security.Claims;
 
+using ZConnector.GlobalHanlders;
 using ZConnector.Models.Client;
 using ZConnector.Services.Client.Interfaces;
 
@@ -29,7 +31,10 @@ namespace ZConnector.Controllers.Client
                 string? id = User.FindFirstValue("id");
                 if (id is not null)
                 {
-                    userDataStatus = await _userService.GetUserById(Convert.ToInt32(id));
+                    userDataStatus = await ApiEfCoreHandler.ExecuteWithHandlingAsync(
+                        async () => await _userService.GetUserById(Convert.ToInt32(id)),
+                        "User"
+                    );
                 }
                 else
                 {
@@ -41,6 +46,10 @@ namespace ZConnector.Controllers.Client
                     return NotFound("User data not found. Try Login again.");
                 }
                 return Ok(userDataStatus);
+            }
+            catch (EfSafeException ex)
+            {
+                return StatusCode(ex.statusCode, ex.Message);
             }
             catch 
             {
@@ -58,12 +67,20 @@ namespace ZConnector.Controllers.Client
                 {
                     userModel.ID = Convert.ToInt32(id);
 
-                    await _userService.UpdateUserInfo(userModel);
+                    await ApiEfCoreHandler.ExecuteWithHandlingAsync(
+                        async () => await _userService.UpdateUserInfo(userModel),
+                        "User"
+                    );
+
                     return Ok();
                 }
                 return Unauthorized("Session expired. Try Login again.");
             }
-            catch 
+            catch (EfSafeException ex) 
+            {
+                return StatusCode(ex.statusCode, ex.Message);
+            }
+            catch
             {
                 return BadRequest("An internal error occurred while updating user data.");
             }

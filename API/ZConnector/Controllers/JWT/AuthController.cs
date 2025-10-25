@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
+using ZConnector.GlobalHanlders;
 using ZConnector.Models.JWT;
 using ZConnector.Services.JWT;
 
@@ -25,7 +26,15 @@ namespace ZConnector.Controllers.JWT
         {
             try 
             {
-                return Ok(await _authManagerService.TestCredentialsAndGetUser(user));
+                return Ok(await ApiEfCoreHandler.ExecuteWithHandlingAsync(
+                        async () => await _authManagerService.TestCredentialsAndGetUser(user),
+                        "User"
+                    )
+                );
+            }
+            catch (EfSafeException ex)
+            {
+                return StatusCode(ex.statusCode, ex.Message);
             }
             catch (KeyNotFoundException) 
             {
@@ -50,8 +59,15 @@ namespace ZConnector.Controllers.JWT
         {
             try 
             {
-                await _authManagerService.Register(user);
+                await ApiEfCoreHandler.ExecuteWithHandlingAsync(
+                    async () => await _authManagerService.Register(user),
+                    "Registration"
+                );
                 return Ok();
+            }
+            catch (EfSafeException ex)
+            {
+                return StatusCode(ex.statusCode, ex.Message);
             }
             catch 
             {

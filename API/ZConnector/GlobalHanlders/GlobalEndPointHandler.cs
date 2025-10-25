@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace ZConnector.GlobalHanlders
 {
-    public class GlobalModelStateValidatorAttribute : ActionFilterAttribute
+    public class GlobalEndPointHandler : ActionFilterAttribute
     {
         private string GetFirstModelErrorMessage(ModelStateDictionary ModelState)
         {
