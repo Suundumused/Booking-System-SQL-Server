@@ -29,7 +29,7 @@ BEGIN
 	)
 	BEGIN
 		SET @ErrorMessage = 'The date block overlaps an existing one.';
-		THROW 51000, @ErrorMessage, 1;
+		THROW 62601, @ErrorMessage, 1;
 		RETURN;
 	END
 		ELSE
@@ -47,7 +47,7 @@ BEGIN
 		)
 		BEGIN
 			SET @ErrorMessage = 'The date block overlaps an existing booking. From ';
-			THROW 51000, @ErrorMessage, 1;
+			THROW 72601, @ErrorMessage, 1;
 			RETURN;
 		END;
 	END;

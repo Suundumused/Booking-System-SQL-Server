@@ -11,7 +11,7 @@ namespace ZConnector.Data
         public virtual DbSet<User> Users { get; set; }
         public virtual DbSet<Hotel> Hotels { get; set; }
         public virtual DbSet<Booking> Bookings { get; set; }
-
+    
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {

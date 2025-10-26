@@ -26,20 +26,13 @@ namespace ZConnector.Controllers.Client
         {
             try 
             {
-                UserModel? userDataStatus;
-                
                 string? id = User.FindFirstValue("id");
-                if (id is not null)
-                {
-                    userDataStatus = await ApiEfCoreHandler.ExecuteWithHandlingAsync(
-                        async () => await _userService.GetUserById(Convert.ToInt32(id)),
-                        "User"
-                    );
-                }
-                else
-                {
-                    return Unauthorized("User Id not found. Try Login again.");
-                }
+                if (id is null) return Unauthorized("Session expired. Try Login again.");
+
+                UserModel? userDataStatus = await ApiEfCoreHandler.ExecuteWithHandlingAsync(
+                    async () => await _userService.GetUserById(Convert.ToInt32(id)),
+                    "User"
+                );
 
                 if (userDataStatus is null)
                 {
@@ -47,9 +40,9 @@ namespace ZConnector.Controllers.Client
                 }
                 return Ok(userDataStatus);
             }
-            catch (EfSafeException ex)
-            {
-                return StatusCode(ex.statusCode, ex.Message);
+            catch (EfSafeException ex) 
+            { 
+                return StatusCode(ex.statusCode, ex.Message); 
             }
             catch 
             {
@@ -63,18 +56,16 @@ namespace ZConnector.Controllers.Client
             try 
             {
                 string? id = User.FindFirstValue("id");
-                if (id is not null)
-                {
-                    userModel.ID = Convert.ToInt32(id);
+                if (id is null) return Unauthorized("Session expired. Try Login again.");
 
-                    await ApiEfCoreHandler.ExecuteWithHandlingAsync(
-                        async () => await _userService.UpdateUserInfo(userModel),
-                        "User"
-                    );
+                userModel.ID = Convert.ToInt32(id);
 
-                    return Ok();
-                }
-                return Unauthorized("Session expired. Try Login again.");
+                await ApiEfCoreHandler.ExecuteWithHandlingAsync(
+                    async () => await _userService.UpdateUserInfo(userModel),
+                    "User"
+                );
+
+                return Ok();
             }
             catch (EfSafeException ex) 
             {

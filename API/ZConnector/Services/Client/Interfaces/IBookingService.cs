@@ -2,9 +2,9 @@
 using ZConnector.Models.Entities;
 
 
-namespace ZConnector.Repositories.Interfaces
+namespace ZConnector.Services.Client.Interfaces
 {
-    public interface IBookingRepository : IBaseRepository<Booking>
+    public interface IBookingService
     {
         Task<Booking?> GetBookingById(int id);
 
@@ -13,6 +13,7 @@ namespace ZConnector.Repositories.Interfaces
         Task<IEnumerable<Booking>> ListBookingsByDateInOutHotelAsync(DateTime checkIn, DateTime checkOut, int? hotelId);
 
         Task Book(BookingModel booking);
+        Task UnBook(int id);
         Task UpdateBookingInfo(BookingModel bookingModel);
     }
 }

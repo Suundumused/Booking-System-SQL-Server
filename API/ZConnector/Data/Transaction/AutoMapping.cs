@@ -16,6 +16,9 @@ namespace ZConnector.Data.Transaction
 
             CreateMap<RegisterCredentials, User>();
             CreateMap<LoginCredentials, User>();
+
+            CreateMap<Booking, BookingModel>();
+            CreateMap<BookingModel, Booking>();
         }
     }
 }

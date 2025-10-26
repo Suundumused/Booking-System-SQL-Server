@@ -94,12 +94,15 @@ builder.Services.AddAutoMapper(cfg =>
 
 builder.Services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
 builder.Services.AddScoped<IUsersRepository, UsersRepository>();
+builder.Services.AddScoped<IBookingRepository, BookingRepository>();
 
 builder.Services.AddScoped<IAuthManagerService, AuthManagerService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IBookingService, BookingService>();
 
 builder.Services.AddTransient<IAuthManagerService, AuthManagerService>();
 builder.Services.AddTransient<IUserService, UserService>();
+builder.Services.AddTransient<IBookingService, BookingService>();
 
 builder.Services.AddAuthorization();
 builder.Services.AddHttpContextAccessor();

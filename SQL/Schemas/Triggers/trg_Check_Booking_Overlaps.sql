@@ -22,6 +22,9 @@ BEGIN
 	EXEC usp_CheckBookingsBlocksOverlaps @HotelID, @MaxRooms, -1, @CheckIn, @CheckOut
 
 	INSERT INTO Bookings (CheckIn, CheckOut, UserID, HotelID, Price)
+	OUTPUT 
+		inserted.ID, 
+		inserted.Price
 	SELECT 
 		CheckIn, 
 		CheckOut, 

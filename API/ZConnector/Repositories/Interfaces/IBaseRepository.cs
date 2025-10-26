@@ -15,5 +15,6 @@ namespace ZConnector.Repositories.Interfaces
         Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate);
 
         Task SaveChangesAsync();
+        Task ReloadChangesAsync(T entity);
     }
 }

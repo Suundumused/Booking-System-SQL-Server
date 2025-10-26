@@ -19,7 +19,7 @@ BEGIN
 	IF EXISTS
 	(
 		SELECT 1
-		FROM CustomPrices
+			FROM CustomPrices
 		WHERE
 			HotelID = @HotelID
 		AND
@@ -29,7 +29,7 @@ BEGIN
 	)
 	BEGIN
 		SET @ErrorMessage = 'The date price overlaps an existing one.';
-		THROW 51000, @ErrorMessage, 1;
+		THROW 82601, @ErrorMessage, 1;
 		RETURN;
 	END;
 

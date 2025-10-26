@@ -39,6 +39,9 @@ BEGIN
 				(SELECT Price FROM inserted)
 			)
 		)
+	OUTPUT 
+		inserted.ID, 
+		inserted.Price
 	WHERE Bookings.ID = @SelfID;
 END;
 GO

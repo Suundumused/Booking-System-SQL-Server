@@ -1,6 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+
 using ZConnector.Models.Entities;
+
 
 namespace ZConnector.Data.EntityConfig
 {
@@ -17,6 +19,9 @@ namespace ZConnector.Data.EntityConfig
             builder.HasOne(h => h.Hotel)
                 .WithMany()
                 .HasForeignKey(h => h.HotelID);
+
+            builder.ToTable(t => t.HasTrigger("trg_Check_Booking_Overlaps"));
+            builder.ToTable(t => t.HasTrigger("trg_Check_Booking_Overlaps_On_Update"));
         }
     }
 }

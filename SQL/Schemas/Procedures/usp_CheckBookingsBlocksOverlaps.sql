@@ -29,7 +29,7 @@ BEGIN
 			'Max rooms exhausted for the selected hotel. Overlaps: ', 
 			@OverlapingCount
 		);
-		THROW 51000, @ErrorMessage, 1;
+		THROW 92601, @ErrorMessage, 1;
 		RETURN;
 	END
 		ELSE
@@ -47,7 +47,7 @@ BEGIN
 		)
 		BEGIN
 			SET @ErrorMessage = 'The reservation dates overlap with blocking dates.';
-			THROW 51000, @ErrorMessage, 1;
+			THROW 102601, @ErrorMessage, 1;
 			RETURN;
 		END;
 	END;
