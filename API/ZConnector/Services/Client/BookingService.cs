@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using ZConnector.Models.Client;
+using ZConnector.Models.Client.Booking;
 using ZConnector.Models.Entities;
 using ZConnector.Repositories.Interfaces;
 using ZConnector.Services.Client.Interfaces;
@@ -34,6 +34,11 @@ namespace ZConnector.Services.Client
             return await _bookingRepository.GetBookingById(id);
         }
 
+        public async Task<int?> GetBookingOwnerById(int id) 
+        {
+            return await _bookingRepository.GetBookingOwnerById(id);
+        }
+
         public async Task<IEnumerable<Booking>> ListBookingsByDateInOutHotelAsync(DateTime checkIn, DateTime checkOut, int? hotelId)
         {
             return await _bookingRepository.ListBookingsByDateInOutHotelAsync(checkIn, checkOut, hotelId);
@@ -49,7 +54,7 @@ namespace ZConnector.Services.Client
             return await _bookingRepository.ListBooKingsByUserByHotel(userId, hotelId);
         }
 
-        public async Task UpdateBookingInfo(BookingModel bookingModel)
+        public async Task UpdateBookingInfo(BookingUpdateModel bookingModel)
         {
             await _bookingRepository.UpdateBookingInfo(bookingModel);
         }

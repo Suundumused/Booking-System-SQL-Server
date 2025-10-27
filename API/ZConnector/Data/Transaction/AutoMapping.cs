@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 
-using ZConnector.Models.Client;
+using ZConnector.Models.Client.Booking;
+using ZConnector.Models.Client.User;
 using ZConnector.Models.Entities;
 using ZConnector.Models.JWT;
 
@@ -19,6 +20,7 @@ namespace ZConnector.Data.Transaction
 
             CreateMap<Booking, BookingModel>();
             CreateMap<BookingModel, Booking>();
+            CreateMap<BookingUpdateModel, Booking>();
         }
     }
 }

@@ -6,7 +6,7 @@ INSERT INTO CalendarBlocks (HotelID, DateIn, DateOut) VALUES (1, '2025-09-02 00:
 INSERT INTO Bookings (CheckIn, CheckOut, UserID, HotelID) VALUES ('2025-10-06 00:00:00.001', '2025-10-09 23:59:59.000', 2, 1);
 
 INSERT INTO Bookings (CheckIn, CheckOut, UserID, HotelID) VALUES ('2025-12-03 00:00:00.001', '2025-12-09 23:59:59.000', 2, 1);
-INSERT INTO Bookings (CheckIn, CheckOut, UserID, HotelID) VALUES ('2025-05-03 00:00:00.001', '2025-05-09 23:59:59.000', 7, 1);
+INSERT INTO Bookings (CheckIn, CheckOut, UserID, HotelID) VALUES ('2025-05-03 00:00:00.001', '2025-05-09 23:59:59.000', 1, 1);
 
 INSERT INTO CustomPrices (HotelID, DateIn, DateOut, Price) VALUES (1, '2025-12-02 00:00:00.001', '2025-12-07 23:59:59.001', 170.50);
 INSERT INTO CustomPrices (HotelID, DateIn, DateOut, Price) VALUES (1, '2025-05-02 00:00:00.001', '2025-05-10 23:59:59.001', 100.00);
@@ -25,7 +25,10 @@ SELECT * FROM CalendarBlocks;
 SELECT * FROM CustomPrices;
 SELECT * FROM SupportMessages;
 
-DELETE FROM Bookings;
+DELETE FROM Bookings WHERE ID = 33;
+
+SELECT UserID FROM Bookings WHERE ID = 33;
+
 
 SELECT 1
 	FROM CustomPrices

@@ -3,7 +3,7 @@
 using Microsoft.EntityFrameworkCore;
 
 using ZConnector.Data;
-using ZConnector.Models.Client;
+using ZConnector.Models.Client.Booking;
 using ZConnector.Models.Entities;
 using ZConnector.Repositories.Interfaces;
 
@@ -26,6 +26,11 @@ namespace ZConnector.Repositories
                 .Include(u => u.User)
                 .Include(h => h.Hotel)
                 .FirstOrDefaultAsync();
+        }
+
+        public async Task<int?> GetBookingOwnerById(int id) 
+        {
+            return await _context.Bookings.Where(b => b.ID == id).Select(u => u.UserID).FirstOrDefaultAsync();
         }
 
         public async Task<IEnumerable<Booking>> ListBookingsByDateInOutHotelAsync(DateTime checkIn, DateTime checkOut, int? hotelId)
@@ -92,9 +97,9 @@ namespace ZConnector.Repositories
             await SaveChangesAsync();
         }
 
-        public async Task UpdateBookingInfo(BookingModel bookingModel)
+        public async Task UpdateBookingInfo(BookingUpdateModel bookingModel)
         {
-            var booking = new Booking { ID = bookingModel.ID };
+            var booking = new Booking { ID = (int)bookingModel.ID! };
 
             _context.Bookings.Attach(booking);
 

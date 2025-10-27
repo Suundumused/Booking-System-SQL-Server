@@ -1,4 +1,4 @@
-﻿using ZConnector.Models.Client;
+﻿using ZConnector.Models.Client.User;
 
 
 namespace ZConnector.Models.JWT

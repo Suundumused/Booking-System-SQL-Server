@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using ZConnector.Models.Client;
+using ZConnector.Models.Client.User;
 
 
 namespace ZConnector.Models.Entities

@@ -40,7 +40,6 @@ BEGIN
 			)
 		)
 	OUTPUT 
-		inserted.ID, 
 		inserted.Price
 	WHERE Bookings.ID = @SelfID;
 END;

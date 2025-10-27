@@ -3,7 +3,7 @@
 using System.Security.Claims;
 
 using ZConnector.GlobalHanlders;
-using ZConnector.Models.Client;
+using ZConnector.Models.Client.User;
 using ZConnector.Services.Client.Interfaces;
 
 
@@ -27,7 +27,7 @@ namespace ZConnector.Controllers.Client
             try 
             {
                 string? id = User.FindFirstValue("id");
-                if (id is null) return Unauthorized("Session expired. Try Login again.");
+                if (id is null) return AuthExpired();
 
                 UserModel? userDataStatus = await ApiEfCoreHandler.ExecuteWithHandlingAsync(
                     async () => await _userService.GetUserById(Convert.ToInt32(id)),
@@ -56,7 +56,7 @@ namespace ZConnector.Controllers.Client
             try 
             {
                 string? id = User.FindFirstValue("id");
-                if (id is null) return Unauthorized("Session expired. Try Login again.");
+                if (id is null) return AuthExpired();
 
                 userModel.ID = Convert.ToInt32(id);
 

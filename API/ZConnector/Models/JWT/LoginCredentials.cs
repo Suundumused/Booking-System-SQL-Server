@@ -9,7 +9,9 @@ namespace ZConnector.Models.JWT
 
         [EmailAddress(ErrorMessage = "Invalid email.")]
         public string? Email { get; set; }
-        public required string Password { get; set; }
+
+        [Required(ErrorMessage = "Password is missing.")]
+        public string? Password { get; set; }
 
         public DateTime LastLoginDate { get; } = DateTime.Now;
     }

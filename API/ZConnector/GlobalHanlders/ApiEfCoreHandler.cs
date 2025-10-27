@@ -17,7 +17,13 @@ namespace ZConnector.GlobalHanlders
             CheckConstraint,
             AccessDenied,
             TypeMismatch,
-            Custom
+            DateBlockOverlaps,
+            DateBlockOverlapsBooking,
+            PriceOverlaps,
+            RoomsExhausted,
+            BookingOverlapsBlock,
+            DateRange,
+            DateTimeRange
         }
 
         private static void EfErrorStatement(DbUpdateException ex, string objectName) 
@@ -29,22 +35,22 @@ namespace ZConnector.GlobalHanlders
 
             Debug.Print("As Error: " + ex.Message);
 
-            if (!type.Equals(EfErrorType.Custom)) 
+            result = type switch
             {
-                result = type switch
-                {
-                    EfErrorType.DuplicateKey => (objectName + " already exists.", 401),
-                    EfErrorType.ForeignKey => (objectName + " not found for this occurrence.", 404),
-                    EfErrorType.NullConstraint => ($"A required field for {objectName} is missing.", 400),
-                    EfErrorType.TypeMismatch => ($"Invalid data format. Target is {objectName}.", 400),
-                    EfErrorType.AccessDenied => ($"Permission denied when accessing {objectName} data.", 400),
-                    _ => ($"An unexpected database error occurred. Target is {objectName}", 500)
-                };
-            }
-            else 
-            {
-                result = (errMessage is not null ? errMessage : $"No trace error. Target is {objectName}", 500);
-            }
+                EfErrorType.DuplicateKey => (objectName + " already exists.", 401),
+                EfErrorType.ForeignKey => (objectName + " not found for this occurrence.", 404),
+                EfErrorType.NullConstraint => ($"A required field for {objectName} is missing.", 400),
+                EfErrorType.TypeMismatch => ($"Invalid data format. Target is {objectName}.", 400),
+                EfErrorType.AccessDenied => ($"Permission denied when accessing {objectName} data.", 400),
+                EfErrorType.DateBlockOverlaps => ("The date block overlaps an existing one.", 409),
+                EfErrorType.DateBlockOverlapsBooking => ("The date block overlaps an existing booking.", 409),
+                EfErrorType.PriceOverlaps => ("The date price overlaps an existing one.", 409),
+                EfErrorType.RoomsExhausted => ("Max rooms exhausted for the selected hotel.", 529),
+                EfErrorType.BookingOverlapsBlock => ("The reservation dates overlap with blocking dates.", 409),
+                EfErrorType.DateRange => ("The exit Date must be later than the entry date.", 400),
+                EfErrorType.DateTimeRange => ("The exit Time and Date must be later than the entry date.", 400),
+                _ => ($"An unexpected database error occurred. Target is {objectName}", 500)
+            };
 
             throw new EfSafeException(message: result.Item1, statusCode: result.Item2);
         }
@@ -75,8 +81,26 @@ namespace ZConnector.GlobalHanlders
                     case 8114: 
                         return EfErrorType.TypeMismatch;
                     
-                    case > 9999:
-                        return EfErrorType.Custom;
+                    case 62601:
+                        return EfErrorType.DateBlockOverlaps;
+
+                    case 72601:
+                        return EfErrorType.DateBlockOverlapsBooking;
+
+                    case 82601:
+                        return EfErrorType.PriceOverlaps;
+
+                    case 92601:
+                        return EfErrorType.RoomsExhausted;
+
+                    case 102601:
+                        return EfErrorType.BookingOverlapsBlock;
+
+                    case 65470:
+                        return EfErrorType.DateRange;
+
+                    case 65471:
+                        return EfErrorType.DateTimeRange;
 
                     default:
                         return EfErrorType.Unknown;

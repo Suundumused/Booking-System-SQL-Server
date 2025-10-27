@@ -46,7 +46,7 @@ BEGIN
 				CheckOut > @DateIn
 		)
 		BEGIN
-			SET @ErrorMessage = 'The date block overlaps an existing booking. From ';
+			SET @ErrorMessage = 'The date block overlaps an existing booking.';
 			THROW 72601, @ErrorMessage, 1;
 			RETURN;
 		END;

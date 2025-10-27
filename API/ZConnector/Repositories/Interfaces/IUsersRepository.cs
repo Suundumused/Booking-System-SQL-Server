@@ -1,4 +1,4 @@
-﻿using ZConnector.Models.Client;
+﻿using ZConnector.Models.Client.User;
 using ZConnector.Models.Entities;
 using ZConnector.Models.JWT;
 

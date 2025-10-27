@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
 
-namespace ZConnector.Models.Client 
+namespace ZConnector.Models.Client.User 
 {
     public partial class UserModel
     {

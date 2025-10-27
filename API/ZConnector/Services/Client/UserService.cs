@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
-
-using ZConnector.Models.Client;
+using ZConnector.Models.Client.User;
 using ZConnector.Models.Entities;
 using ZConnector.Repositories.Interfaces;
 using ZConnector.Services.Client.Interfaces;

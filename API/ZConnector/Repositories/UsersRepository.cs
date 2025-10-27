@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Security.Cryptography;
 
 using ZConnector.Data;
-using ZConnector.Models.Client;
+using ZConnector.Models.Client.User;
 using ZConnector.Models.Entities;
 using ZConnector.Models.JWT;
 using ZConnector.Repositories.Interfaces;
