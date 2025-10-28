@@ -31,7 +31,7 @@ This project serves as a base for building modern web APIs using:
 ### appsettings.json
 
 - Replace the `DbConnection` in `ConnectionStrings` with your own SQL Connection.
-- Run `GenerateToken.py` copy the token and update at `JWT` in `Secret` to the one you generated.
+- Run `GenerateToken.py` (requires `Python 3.8..+`) copy the token and update at `JWT` in `Secret` to the one you generated.
     
 ## Routes
 
