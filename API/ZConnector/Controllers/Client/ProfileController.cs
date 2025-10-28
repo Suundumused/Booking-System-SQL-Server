@@ -64,7 +64,6 @@ namespace ZConnector.Controllers.Client
                     async () => await _userService.UpdateUserInfo(userModel),
                     "User"
                 );
-
                 return Ok();
             }
             catch (EfSafeException ex) 

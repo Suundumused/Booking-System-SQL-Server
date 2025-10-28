@@ -14,7 +14,7 @@ namespace ZConnector.Models.JWT
         [MinLength(6, ErrorMessage = "The password must contain at least six characters.")]
         public required string Password { get; set; }
 
-        [RegularExpression(@"^[a-zA-Z]+$", ErrorMessage = "Only alphabetic characters are allowed.")]
+        [RegularExpression(@"^[a-zA-Z\s]+$", ErrorMessage = "Only alphabetic characters are allowed.")]
         public string? Name { get; set; }
 
         public int? Phone1 { get; set; }

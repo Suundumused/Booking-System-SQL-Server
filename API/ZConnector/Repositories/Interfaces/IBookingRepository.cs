@@ -15,5 +15,6 @@ namespace ZConnector.Repositories.Interfaces
 
         Task Book(BookingModel booking);
         Task UpdateBookingInfo(BookingUpdateModel bookingModel);
+        Task UnBook(int id);
     }
 }

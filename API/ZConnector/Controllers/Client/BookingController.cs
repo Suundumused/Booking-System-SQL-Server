@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics;
+
 using System.Security.Claims;
 
 using ZConnector.GlobalHanlders;
@@ -20,6 +20,21 @@ namespace ZConnector.Controllers.Client
         public BookingController(IBookingService bookingService)
         {
             _bookingService = bookingService;
+        }
+
+        private async Task<IActionResult?> CheckBookingAndAuthority(int bookingId, int userId) 
+        {
+            int? currentBookingOwnerId = await _bookingService.GetBookingOwnerById(bookingId);
+            if (currentBookingOwnerId is null)
+            {
+                return NotFound("Booking not found.");
+            }
+            if (currentBookingOwnerId != userId)
+            {
+                return Unauthorized("Booking does not belong to the user.");
+            }
+
+            return null;
         }
 
         [HttpGet("{hotelId}")]
@@ -88,21 +103,15 @@ namespace ZConnector.Controllers.Client
 
                 bookingModel.UserID = Convert.ToInt32(id);
 
-                int? currentBookingOwnerId = await _bookingService.GetBookingOwnerById((int)bookingModel.ID!);
-                if (currentBookingOwnerId is null) 
+                if (await CheckBookingAndAuthority((int)bookingModel.ID!, (int)bookingModel.UserID) is not null and IActionResult result) 
                 {
-                    return NotFound("Booking not found.");
-                }
-                if (currentBookingOwnerId != bookingModel.UserID) 
-                {
-                    return Unauthorized("Booking does not belong to the user.");
+                    return result;
                 }
 
                 await ApiEfCoreHandler.ExecuteWithHandlingAsync(
                     async () => await _bookingService.UpdateBookingInfo(bookingModel),
                     "Booking"
                 );
-
                 return Ok();
             }
             catch (EfSafeException ex)
@@ -112,6 +121,35 @@ namespace ZConnector.Controllers.Client
             catch
             {
                 return BadRequest("An internal error occurred while updating the booking.");
+            }
+        }
+
+        [HttpDelete("{bookingId}")]
+        public async Task<IActionResult> UnBook(int bookingId) 
+        {
+            try 
+            {
+                string? id = User.FindFirstValue("id");
+                if (id is null) return AuthExpired();
+
+                if (await CheckBookingAndAuthority(bookingId, Convert.ToInt32(id)) is not null and IActionResult result)
+                {
+                    return result;
+                }
+
+                await ApiEfCoreHandler.ExecuteWithHandlingAsync(
+                    async () => await _bookingService.UnBook(bookingId),
+                    "Booking"
+                );
+                return Ok();
+            }
+            catch (EfSafeException ex) 
+            {
+                return StatusCode(ex.statusCode, ex.Message);
+            }
+            catch 
+            {
+                return BadRequest("An internal error occurred while unbooking.");
             }
         }
     }

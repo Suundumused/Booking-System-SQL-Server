@@ -10,7 +10,7 @@ namespace ZConnector.Models.Client.User
         public string? Username { get; set; }
         public string? Email { get; set; }
 
-        [RegularExpression(@"^[a-zA-Z]+$", ErrorMessage = "Only alphabetic characters are allowed.")]
+        [RegularExpression(@"^[a-zA-Z\s]+$", ErrorMessage = "Only alphabetic characters are allowed.")]
         public string? Name { get; set; }
 
         public int? Phone1 { get; set; }

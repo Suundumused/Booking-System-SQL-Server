@@ -36,7 +36,13 @@ BEGIN
 				@HotelID, 
 				@CheckIn, 
 				@CheckOut, 
-				(SELECT Price FROM inserted)
+				(
+					SELECT 
+					CASE 
+						WHEN UPDATE(Price) THEN (SELECT Price FROM inserted)
+						ELSE NULL
+					END
+				)
 			)
 		)
 	OUTPUT 

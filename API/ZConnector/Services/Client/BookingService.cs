@@ -26,7 +26,7 @@ namespace ZConnector.Services.Client
 
         public async Task UnBook(int id)
         {
-            throw new NotImplementedException();
+            await _bookingRepository.UnBook(id);
         }
 
         public async Task<Booking?> GetBookingById(int id)

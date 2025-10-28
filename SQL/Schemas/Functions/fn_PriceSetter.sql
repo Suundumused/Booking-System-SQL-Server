@@ -5,7 +5,7 @@ CREATE OR ALTER FUNCTION fn_PriceSetter
 	@CheckIn DATETIME,
 	@CheckOut DATETIME,
 
-	@CustomPrice DECIMAL(10, 2)
+	@CustomPrice DECIMAL(10, 2) = NULL
 )
 RETURNS DECIMAL(10, 2)
 BEGIN

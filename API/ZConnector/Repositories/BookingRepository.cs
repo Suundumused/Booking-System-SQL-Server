@@ -129,5 +129,11 @@ namespace ZConnector.Repositories
 
             await SaveChangesAsync();
         }
+
+        public async Task UnBook(int id) 
+        {
+            await DeleteAsync(id);
+            await SaveChangesAsync();
+        }
     }
 }

@@ -1,6 +1,4 @@
-﻿using ZConnector.Models.Default;
-using ZConnector.Models.Entities;
-using ZConnector.Models.JWT;
+﻿using ZConnector.Models.JWT;
 
 
 namespace ZConnector.Services.JWT
