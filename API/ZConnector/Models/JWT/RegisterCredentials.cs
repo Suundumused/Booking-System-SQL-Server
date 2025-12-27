@@ -15,7 +15,7 @@ namespace ZConnector.Models.JWT
         public required string Password { get; set; }
 
         [RegularExpression(@"^[a-zA-Z\s]+$", ErrorMessage = "Only alphabetic characters are allowed.")]
-        public string? Name { get; set; }
+        public required string Name { get; set; }
 
         public int? Phone1 { get; set; }
         public int? Phone2 { get; set; }

@@ -87,7 +87,7 @@ namespace ZConnector.Repositories
             {
                 user.LastLoginDate = credentials.LastLoginDate;
 
-                Update(_mapper.Map<User>(user));
+                Update(user);
                 await SaveChangesAsync();
 
                 return _mapper.Map<UserModel>(user);
